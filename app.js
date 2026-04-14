@@ -767,7 +767,7 @@ async function toggleNotifications(){
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: 'BEEQx-o45PHXez8mhD8KZR1aISwH-yDt4bRZNLq1O8reA3dcWfgS1LvzLRPHYX-wG0fkrhevh_PJ-G_QP5pi5GY' // Public VAPID Key (Needs real key)
+          applicationServerKey: 'BEEQx-o45PHXez8mhD8KZR1aISwH-yDt4bRZNLq1O8reA3dcWfgS1LvLRPHYX-wG0fkrhevh_PJ-G_QP5pi5GY' // Public VAPID Key
         });
         await db.collection('users').doc(currentUser.uid).set({ pushSubscription: JSON.parse(JSON.stringify(sub)) }, {merge:true});
       } catch(e) { console.error('Push Sub Error:', e); }
@@ -1009,102 +1009,7 @@ ${pendingToday.length>0?`
   showToast('📄 Report opened! Tap "Save as PDF" button in the report.');
 }
 
-// -- EMAIL REPORT --
-async function sendEmailReport(){
-  const emailInput = document.getElementById('reportEmail');
-  const email = emailInput.value.trim();
-  if(!email){ 
-    document.getElementById('emailReportMsg').innerHTML='<span style="color:#dc2626;">Please enter your email address.</span>';
-    return; 
-  }
-  if(!email.includes('@')){ 
-    document.getElementById('emailReportMsg').innerHTML='<span style="color:#dc2626;">Please enter a valid email.</span>';
-    return; 
-  }
-  if(!entries.length){ showToast('No data yet! Add some topics first.'); return; }
 
-  const btn = document.getElementById('sendEmailBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:3px solid rgba(255,255,255,0.4);border-top:3px solid #fff;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;"></span>Sending...';
-  document.getElementById('emailReportMsg').innerHTML='<span style="color:#0284c7;">Sending via Brevo...</span>';
-
-  try {
-    const {score,done,pending} = calcPerformanceScore();
-    const {current,longest,total} = calcStreak();
-    const todayItems = getTodayItems();
-    const pendingToday = todayItems.filter(i=>!i.done);
-    const totalRevisions = entries.reduce((a,e)=>a+e.revisions.length,0);
-    const userName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Student';
-    const dateStr = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-    const scoreMsg = score>=90?'🔥 Excellent!':score>=70?'✅ Good progress!':score>=50?'📈 Getting there!':'💪 Keep pushing!';
-
-    const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;">
-<div style="max-width:580px;margin:0 auto;padding:20px;">
-  <div style="background:linear-gradient(135deg,#0284c7,#0ea5e9);border-radius:16px 16px 0 0;padding:28px 24px;text-align:center;">
-    <h1 style="color:#fff;font-size:22px;margin:0 0 4px;">📚 Study Tracker</h1>
-    <p style="color:rgba(255,255,255,0.85);font-size:13px;margin:0;">Progress Report - ${dateStr}</p>
-  </div>
-  <div style="background:#fff;padding:24px;border-radius:0 0 16px 16px;">
-    <p style="font-size:16px;font-weight:600;color:#0f172a;">Hi ${userName}! 👋</p>
-    <div style="background:linear-gradient(135deg,#0284c7,#0ea5e9);border-radius:12px;padding:20px;text-align:center;margin:16px 0;">
-      <div style="font-size:11px;color:rgba(255,255,255,0.8);text-transform:uppercase;margin-bottom:6px;">🏆 Performance Score</div>
-      <div style="font-size:42px;font-weight:800;color:#fff;">${score}%</div>
-      <div style="font-size:15px;color:rgba(255,255,255,0.9);">${scoreMsg}</div>
-    </div>
-    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:14px 0;">
-      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:10px;">📊 Study Stats</div>
-      <p style="margin:4px 0;font-size:13px;color:#475569;">📖 Topics Logged: <strong>${entries.length}</strong></p>
-      <p style="margin:4px 0;font-size:13px;color:#475569;">✅ Revisions Done: <strong>${done}</strong></p>
-      <p style="margin:4px 0;font-size:13px;color:#475569;">⏳ Pending: <strong>${pending}</strong></p>
-      <p style="margin:4px 0;font-size:13px;color:#475569;">📅 Total Scheduled: <strong>${totalRevisions}</strong></p>
-    </div>
-    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:14px 0;">
-      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;margin-bottom:10px;">🔥 Streak</div>
-      <p style="margin:4px 0;font-size:13px;color:#475569;">🔥 Current: <strong>${current} days</strong></p>
-      <p style="margin:4px 0;font-size:13px;color:#475569;">🏆 Best: <strong>${longest} days</strong></p>
-      <p style="margin:4px 0;font-size:13px;color:#475569;">📅 Total Days: <strong>${total}</strong></p>
-    </div>
-    ${pendingToday.length>0 ? `<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:16px;margin:14px 0;">
-      <div style="font-size:11px;color:#c2410c;text-transform:uppercase;margin-bottom:8px;">⏰ Pending Today (${pendingToday.length})</div>
-      ${pendingToday.slice(0,5).map(i=>`<p style="margin:4px 0;font-size:13px;color:#475569;">[${i.label}] ${i.topic}</p>`).join('')}
-    </div>` : `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;text-align:center;margin:14px 0;">
-      <strong style="color:#16a34a;">✅ All revisions done for today!</strong>
-    </div>`}
-    <a href="https://study-five-umber.vercel.app" style="display:block;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;text-decoration:none;text-align:center;border-radius:10px;padding:14px;font-weight:700;font-size:14px;margin:20px 0 10px;">📱 Open Study Tracker</a>
-  </div>
-</div></body></html>`;
-
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'api-key': 'REDACTED_BREVO_KEY', // Move to Vercel Environment Variables
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        sender: { name: 'Study Tracker', email: 'darshanderkar20@gmail.com' },
-        to: [{ email: email, name: userName }],
-        subject: `📚 Study Tracker Report - ${dateStr}`,
-        htmlContent
-      })
-    });
-
-    if(res.ok){
-      btn.disabled = false;
-      btn.innerHTML = '📧 Send Report to My Email';
-      document.getElementById('emailReportMsg').innerHTML='<span style="color:#16a34a;">✅ Report sent! Check your inbox.</span>';
-      showToast('📧 Report sent to ' + email + '!');
-    } else {
-      throw new Error('Brevo returned status ' + res.status);
-    }
-  } catch(err) {
-    btn.disabled = false;
-    btn.innerHTML = '📧 Send Report to My Email';
-    document.getElementById('emailReportMsg').innerHTML='<span style="color:#dc2626;">❌ Failed to send. Try again.</span>';
-    console.error('Email error:', err);
-  }
-}
 
 
 // DARK MODE
