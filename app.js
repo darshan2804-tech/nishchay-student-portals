@@ -767,7 +767,7 @@ async function toggleNotifications(){
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: 'BHj-_o_zH8O1vN2_XgR_9R_V-PxgIe_zF1g4g2kGqW7PoxPzJ-qVzE0g-E0t9-_Ym5O3rYq-aGk' // Public VAPID Key (Needs real key)
+          applicationServerKey: 'BEEQx-o45PHXez8mhD8KZR1aISwH-yDt4bRZNLq1O8reA3dcWfgS1LvzLRPHYX-wG0fkrhevh_PJ-G_QP5pi5GY' // Public VAPID Key (Needs real key)
         });
         await db.collection('users').doc(currentUser.uid).set({ pushSubscription: JSON.parse(JSON.stringify(sub)) }, {merge:true});
       } catch(e) { console.error('Push Sub Error:', e); }
