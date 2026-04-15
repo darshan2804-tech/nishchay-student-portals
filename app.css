@@ -130,7 +130,7 @@ body.dark-mode input, body.dark-mode textarea, body.dark-mode select { backgroun
 
 /* Desktop (≥768px): sidebar + main content grid */
 @media (min-width: 768px) {
-  #appScreen {
+  #appScreen.active {
     display: grid;
     grid-template-columns: var(--sidebar-w) 1fr;
     grid-template-rows: 100vh;
