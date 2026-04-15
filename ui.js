@@ -300,3 +300,29 @@ export function applyTheme(isDark) {
   document.body.classList.toggle('dark-mode', isDark);
   const btn = document.getElementById('themeBtn'); if (btn) btn.textContent = isDark ? '☀️' : '🌙';
 }
+
+// ── Global Platform Logo ──────────────────────────────────────
+export function applyGlobalLogo(url) {
+  const logos = document.querySelectorAll('.h-logo');
+  logos.forEach(logoWrap => {
+    if (url) {
+      logoWrap.style.background = 'none';
+      logoWrap.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      logoWrap.style.background = 'linear-gradient(135deg,var(--teal-dim),var(--teal))';
+      logoWrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="13" height="18" rx="2" fill="white" opacity="0.9"/><rect x="8" y="3" width="13" height="18" rx="2" fill="white" opacity="0.6"/><rect x="4" y="7" width="7" height="1.5" rx="0.75" fill="#1a3a5c"/><rect x="4" y="10" width="9" height="1.5" rx="0.75" fill="#1a3a5c"/><rect x="4" y="13" width="6" height="1.5" rx="0.75" fill="#1a3a5c"/></svg>`;
+    }
+  });
+
+  const sidebarLogos = document.querySelectorAll('.sidebar-logo-icon');
+  sidebarLogos.forEach(logoWrap => {
+    if (url) {
+      logoWrap.style.background = 'none';
+      logoWrap.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      logoWrap.style.background = 'linear-gradient(135deg,var(--teal-dim),var(--teal))';
+      logoWrap.innerHTML = `📚`;
+    }
+  });
+}
+

@@ -9,11 +9,11 @@ import { initAuth, showAuthTab, forgotPassword, doLogin, doAdminLogin, doRegiste
 import { listenToEntries, stopListening, saveEntry, deleteEntry, saveDoneKeys, getDoneKeys,
          saveExamDates, getExamDates, saveStudyTarget, getStudyTarget,
          saveStudyTime, getStudyTime, savePushSubscription, saveMistake,
-         getMistakes, deleteMistake, saveMockScore, getMockScores } from './db.js';
+         getMistakes, deleteMistake, saveMockScore, getMockScores, listenToSiteSettings } from './db.js';
 import { showScreen, showToast, showAuthMsg, switchTab, updateClock, syncInputTime,
          renderUserInfo, updateTodayBadge, renderToday, renderLog, renderDashboard,
          renderCountdown, showResult, updateNotifToggle, applyTheme,
-         renderPerformanceScore, renderStreak } from './ui.js';
+         renderPerformanceScore, renderStreak, applyGlobalLogo } from './ui.js';
 
 // Study Calendar Standalone URL
 const CALENDAR_URL = 'https://study-calendar-standalone.vercel.app';
@@ -54,6 +54,9 @@ async function initApp(user) {
 
   // Load exam dates from Firestore
   examDates = await getExamDates(db, user.uid);
+
+  // Platform Site Settings Listener (Logo)
+  listenToSiteSettings(db, data => applyGlobalLogo(data.logoUrl));
 
   // Daily done-set from Firestore
   const today = toLocalDate(new Date());

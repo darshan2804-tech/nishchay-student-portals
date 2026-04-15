@@ -144,3 +144,15 @@ export async function getMockScores(db, userId) {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (e) { return []; }
 }
+
+// ── Platform Global Settings ──────────────────────────────────
+export function listenToSiteSettings(db, callback) {
+  return db.collection('site_settings').doc('global').onSnapshot(
+    doc => {
+      if (doc.exists) callback(doc.data());
+      else callback({});
+    },
+    err => console.warn('[db] site_settings listener error:', err)
+  );
+}
+
