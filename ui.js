@@ -303,6 +303,7 @@ export function applyTheme(isDark) {
 
 // ── Global Platform Logo ──────────────────────────────────────
 export function applyGlobalLogo(url) {
+  // Mobile Header Logo
   const logos = document.querySelectorAll('.h-logo');
   logos.forEach(logoWrap => {
     if (url) {
@@ -314,13 +315,29 @@ export function applyGlobalLogo(url) {
     }
   });
 
+  // Desktop Sidebar Logo
   const sidebarLogos = document.querySelectorAll('.sidebar-brand-icon');
   sidebarLogos.forEach(logoWrap => {
     if (url) {
       logoWrap.style.background = 'none';
-      logoWrap.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      // Use fixed 32px size here because the parent icon container uses font-size rather than fixed block dimensions
+      logoWrap.innerHTML = `<img src="${url}" style="width:32px;height:32px;object-fit:cover;border-radius:50%;display:block;">`;
     } else {
       logoWrap.style.background = 'linear-gradient(135deg,var(--teal-dim),var(--teal))';
+      logoWrap.innerHTML = `📚`;
+    }
+  });
+
+  // Auth Screen Logo
+  const authLogos = document.querySelectorAll('.auth-logo');
+  authLogos.forEach(logoWrap => {
+    if (url) {
+      logoWrap.style.background = 'none';
+      logoWrap.style.border = '1px solid var(--border)';
+      logoWrap.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+    } else {
+      logoWrap.style.background = 'linear-gradient(135deg,#4f46e5,#6366f1)';
+      logoWrap.style.border = 'none';
       logoWrap.innerHTML = `📚`;
     }
   });
