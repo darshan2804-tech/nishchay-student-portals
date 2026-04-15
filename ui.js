@@ -303,6 +303,13 @@ export function applyTheme(isDark) {
 
 // ── Global Platform Logo ──────────────────────────────────────
 export function applyGlobalLogo(url) {
+  // Cache the logo to instantly apply it to the login screen on next visit
+  if (url) {
+    localStorage.setItem('site_logo', url);
+  } else {
+    localStorage.removeItem('site_logo');
+  }
+
   // Mobile Header Logo
   const logos = document.querySelectorAll('.h-logo');
   logos.forEach(logoWrap => {

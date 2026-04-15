@@ -15,6 +15,12 @@ import { showScreen, showToast, showAuthMsg, switchTab, updateClock, syncInputTi
          renderCountdown, showResult, updateNotifToggle, applyTheme,
          renderPerformanceScore, renderStreak, applyGlobalLogo } from './ui.js';
 
+// Optimistically inject cached logo instantly for the auth screen
+const cachedLogo = localStorage.getItem('site_logo');
+if (cachedLogo) {
+  applyGlobalLogo(cachedLogo);
+}
+
 // Study Calendar Standalone URL
 const CALENDAR_URL = 'https://study-calendar-standalone.vercel.app';
 
