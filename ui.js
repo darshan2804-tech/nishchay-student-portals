@@ -314,7 +314,7 @@ export function applyGlobalLogo(url) {
     }
   });
 
-  const sidebarLogos = document.querySelectorAll('.sidebar-logo-icon');
+  const sidebarLogos = document.querySelectorAll('.sidebar-brand-icon');
   sidebarLogos.forEach(logoWrap => {
     if (url) {
       logoWrap.style.background = 'none';
