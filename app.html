@@ -227,10 +227,19 @@
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
       display: flex;
-      /* Support desktop sidebar layout */
-      flex-direction: row;
-      padding-top: var(--safe-top);
+      overflow: hidden;
+      /* Prevent body scroll, use child scroll instead */
+      flex-direction: column;
+      /* Default for mobile */
     }
+
+    /* Support desktop sidebar layout */
+    @media (min-width: 768px) {
+      body {
+        flex-direction: row !important;
+      }
+    }
+
 
     /* -- SCREENS -- */
     .screen {
@@ -369,7 +378,7 @@
     }
 
     .pending-card {
-      background: #fff;
+      background: var(--surface);
       border-radius: 20px;
       padding: 20px;
       margin: 24px 0;
@@ -469,9 +478,12 @@
       gap: 12px;
     }
 
-    /* Hide header on desktop if sidebar is active */
-    @media (min-width: 992px) {
-      .header {
+    /* Hide header and mobile-specific navs on desktop/tablet */
+    @media (min-width: 768px) {
+
+      .header,
+      .tabs,
+      .bottom-nav {
         display: none !important;
       }
     }
@@ -550,13 +562,23 @@
     /* -- TABS -- */
     .tabs {
       display: flex;
-      border-bottom: 1px solid var(--border);
-      background: rgba(13, 17, 23, 0.9);
-      backdrop-filter: blur(12px);
+      background: var(--surface2);
+      padding: 6px;
+      gap: 6px;
+      margin: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
       position: sticky;
-      top: 59px;
-      z-index: 99;
+      top: 0;
+      z-index: 100;
     }
+
+    @media (min-width: 768px) {
+      .tabs {
+        display: none !important;
+      }
+    }
+
 
     .tab {
       flex: 1;
@@ -594,7 +616,7 @@
     .page {
       display: none;
       padding: 14px 14px 90px;
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto;
     }
 
@@ -604,20 +626,29 @@
     }
 
     /* -- CARDS -- */
+    #appContent {
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 40px;
+    }
+
+    @media (max-width: 767px) {
+      #appContent {
+        padding-bottom: 90px;
+        /* Space for bottom nav */
+      }
+    }
+
     .card {
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: 20px;
       overflow: hidden;
       margin-bottom: 16px;
       position: relative;
-      box-shadow: 0 10px 30px hsla(var(--p-h), 40%, 2%, 0.4);
-      transition: transform 0.3s var(--spring), box-shadow 0.3s var(--smooth);
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 40px hsla(var(--p-h), 40%, 2%, 0.6);
+      box-shadow: 0 4px 20px hsla(var(--p-h), 40%, 2%, 0.2);
     }
 
     .card-teal::before {
@@ -867,7 +898,7 @@
     }
 
     .prog-box {
-      background: #fff;
+      background: var(--surface2);
       border-radius: 20px;
       padding: 26px 28px;
       text-align: center;
@@ -1300,7 +1331,7 @@
 
     .subj-card {
       flex: 1;
-      background: #fff;
+      background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 12px 6px;
@@ -1384,7 +1415,7 @@
 
     .streak-box {
       flex: 1;
-      background: #fff;
+      background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 13px 8px;
@@ -1425,7 +1456,7 @@
     }
 
     .heatmap-wrap {
-      background: #fff;
+      background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 14px;
@@ -1601,7 +1632,7 @@
 
     .perf-bar {
       height: 100%;
-      background: #fff;
+      background: var(--surface2);
       border-radius: 100px;
       transition: width 0.8s ease;
     }
@@ -1689,7 +1720,7 @@
       align-items: center;
       gap: 10px;
       width: 100%;
-      background: #fff;
+      background: var(--surface2);
       border: 1.5px solid var(--border2);
       border-radius: 12px;
       padding: 13px 16px;
@@ -1749,11 +1780,11 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: #0d1b2acc;
-      z-index: 6000;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 6001;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(4px);
+      padding: 20px;
     }
 
     .modal-overlay.show {
@@ -1761,20 +1792,19 @@
     }
 
     .modal-box {
-      background: #fff;
+      background: var(--surface);
       border-radius: 20px;
-      padding: 24px;
-      max-width: 320px;
-      width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      padding: 22px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
     }
 
     .modal-box h3 {
-      font-family: 'Poppins', sans-serif;
+      font-family: Poppins, sans-serif;
       font-size: 0.95rem;
       font-weight: 700;
-      color: var(--teal-light);
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .modal-field {
@@ -1843,7 +1873,7 @@
       position: fixed;
       top: 60px;
       right: 14px;
-      background: #fff;
+      background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 8px;
@@ -2080,52 +2110,31 @@
       filter: drop-shadow(0 0 4px var(--teal));
     }
 
-    /* ===== NEW FEATURE STYLES ===== */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 6001;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .modal-overlay.show {
-      display: flex;
-    }
-
-    /* -- SIDEBAR (Desktop) -- */
+    /* -- SIDEBAR (Professional Rail) -- */
     .sidebar {
       display: none;
       flex-direction: column;
-      width: 260px;
+      width: 270px;
       height: 100vh;
-      background: var(--surface);
+      background: linear-gradient(180deg, hsla(var(--p-h), 25%, 10%, 1) 0%, hsla(var(--p-h), 25%, 6%, 1) 100%);
       border-right: 1px solid var(--border);
       position: sticky;
       top: 0;
-      padding: 24px 16px;
-      transition: width 0.3s var(--spring);
+      padding: 32px 18px;
+      transition: width 0.4s var(--spring);
       z-index: 1000;
+      overflow-y: auto;
+      flex-shrink: 0;
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
     }
 
-    @media (min-width: 992px) {
+    @media (min-width: 768px) {
       .sidebar {
         display: flex;
       }
 
-      body {
-        flex-direction: row;
-      }
-
-      #appContent {
-        flex: 1;
-        min-width: 0;
-        padding-bottom: 40px;
-      }
-
+      .header,
+      .tabs,
       .bottom-nav {
         display: none !important;
       }
@@ -2134,60 +2143,65 @@
     .sidebar-logo {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 32px;
-      padding-left: 8px;
+      gap: 14px;
+      margin-bottom: 40px;
+      padding: 0 10px;
     }
 
     .sidebar-logo-icon {
-      font-size: 1.8rem;
+      font-size: 2.2rem;
+      filter: drop-shadow(0 0 15px hsla(var(--p-h), var(--p-s), var(--p-l), 0.3));
     }
 
     .sidebar-logo-text .sl-title {
       font-family: 'Poppins', sans-serif;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 800;
       color: #fff;
+      line-height: 1.2;
     }
 
     .sidebar-logo-text .sl-sub {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-weight: 600;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+      margin-top: 2px;
     }
 
     .sidebar-item {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       width: 100%;
       background: transparent;
-      border: none;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 6px;
+      border: 1px solid transparent;
+      border-radius: 15px;
+      padding: 14px 18px;
+      margin-bottom: 8px;
       color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s var(--smooth);
+      transition: all 0.25s var(--smooth);
       font-family: 'Inter', sans-serif;
-      font-size: 0.88rem;
-      font-weight: 500;
+      font-size: 0.92rem;
+      font-weight: 600;
       text-align: left;
     }
 
     .sidebar-item:hover {
-      background: var(--surface2);
+      background: hsla(0, 0%, 100%, 0.04);
       color: #fff;
+      transform: translateX(4px);
     }
 
     .sidebar-item.active {
-      background: var(--primary-pale);
+      background: linear-gradient(135deg, hsla(var(--p-h), var(--p-s), 67%, 0.15), hsla(var(--p-h), var(--p-s), 67%, 0.05));
       color: var(--primary);
-      font-weight: 700;
       border: 1px solid hsla(var(--p-h), var(--p-s), 67%, 0.2);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
+
 
     .sidebar-toggle-btn {
       margin-left: auto;
@@ -4311,7 +4325,7 @@ ${pendingToday.length > 0 ? `
         <span style="font-size:0.68rem;color:#64748b;flex:1;">${r.dateStr || ''}</span>
         <span style="font-size:0.68rem;font-weight:600;color:${r.done ? '#16a34a' : '#d97706'}">${r.done ? 'Done' : 'Pending'}</span>
       </div>`).join('');
-        return `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:10px;">
+        return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <span style="background:#e0f2fe;color:#0284c7;border-radius:6px;padding:2px 8px;font-size:0.62rem;font-weight:700;">#${i + 1}</span>
         <span style="font-size:0.82rem;font-weight:600;color:#0f172a;flex:1;">${e.topic}</span>
@@ -4378,7 +4392,7 @@ ${pendingToday.length > 0 ? `
       var m = document.createElement('div');
       m.id = '_tm';
       m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:6001;align-items:center;justify-content:center;padding:20px;';
-      m.innerHTML = '<div style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">'
+      m.innerHTML = '<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:24px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">'
         + '<div style="font-family:Poppins,sans-serif;font-size:1rem;font-weight:700;margin-bottom:12px;">Set Daily Study Target</div>'
         + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;" id="_to">'
         + [4, 5, 6, 7, 8, 10].map(function (h) {
