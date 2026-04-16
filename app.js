@@ -823,6 +823,8 @@ document.addEventListener('click', e => {
 // ─────────────────────────────────────────────────────────────
 //  INIT DEFAULT STATE
 // ─────────────────────────────────────────────────────────────
-showScreen('authScreen');
+// Show loading screen while Firebase restores session.
+// Do NOT show authScreen here — onLoggedOut() handles that.
+showScreen('loadingScreen');
 showAuthTab('login');
 window.showFormulas('Physics');
