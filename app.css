@@ -98,9 +98,112 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #f
   padding: 20px;
   background: radial-gradient(circle at 50% 0%, hsla(var(--p-h), 80%, 20%, 0.15), transparent);
 }
+.split-auth {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* Left Side: Info */
+.auth-info-side {
+  background: radial-gradient(circle at top left, hsla(var(--p-h), var(--p-s), 50%, 0.15), transparent 40%),
+              radial-gradient(circle at bottom right, hsla(var(--p-h), var(--p-s), 40%, 0.1), transparent 40%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+  position: relative;
+  border-right: 1px solid var(--border);
+}
+
+.floating-logo {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 40px;
+  filter: drop-shadow(0 0 20px var(--primary-pale));
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.info-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #fff;
+  margin-bottom: 24px;
+}
+
+.info-title span {
+  color: var(--primary);
+  background: linear-gradient(90deg, var(--primary), #818cf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.info-desc {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 500px;
+  margin-bottom: 48px;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.feature-item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.f-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.f-text h3 { font-size: 1.1rem; color: #fff; margin-bottom: 4px; }
+.f-text p { font-size: 0.9rem; color: var(--text-dim); }
+
+.info-footer {
+  margin-top: auto;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+/* Right Side: Form */
+.auth-form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(0,0,0,0.2);
+}
+
 .auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 400px;
   background: var(--surface-dim);
   backdrop-filter: blur(25px);
   border: 1px solid var(--border-rich);
@@ -109,11 +212,34 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #f
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   animation: slideUp 0.6s var(--smooth);
 }
-.auth-header { text-align: center; margin-bottom: 32px; }
-.auth-header img { filter: drop-shadow(0 0 15px var(--primary-pale)); transition: transform 0.3s var(--smooth); }
-.auth-header img:hover { transform: scale(1.05); }
-.auth-title { font-size: 2rem; letter-spacing: -0.02em; margin-bottom: 8px; background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.auth-subtitle { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 16px; }
+
+.auth-header { text-align: left; margin-bottom: 40px; }
+.auth-title { font-size: 2.2rem; margin-bottom: 8px; font-family: 'Poppins', sans-serif; }
+
+.auth-actions {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.auth-actions a {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.auth-actions a span { color: var(--primary); font-weight: 700; }
+.auth-actions a:hover { color: #fff; }
+
+/* Responsive Splitting */
+@media (max-width: 1024px) {
+  .split-auth { grid-template-columns: 1fr; }
+  .auth-info-side { display: none; }
+  .auth-form-side { background: var(--bg); height: 100vh; }
+}
 
 /* Sidebar Styling */
 .sidebar-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; padding: 0 12px; }

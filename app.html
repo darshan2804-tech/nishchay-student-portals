@@ -22,47 +22,84 @@
 
   <!-- ── AUTH SCREEN ───────────────────────────────────────────── -->
   <div class="screen active" id="authScreen">
-    <div class="auth-wrapper">
-      <div class="auth-card">
-        <div class="auth-header">
-          <img id="loginLogo" src="https://cdn-icons-png.flaticon.com/512/5968/5968313.png" alt="Logo" style="width: 50px; height: 50px; margin-bottom: 20px;">
-          <h1 class="auth-title">STUDY TRACKER</h1>
-          <p class="auth-subtitle">Professional Student Portal</p>
-          <div class="badge badge-pending">🔒 Authorized Access Only</div>
-        </div>
-
-        <!-- Login Form -->
-        <div id="loginForm">
-          <div class="input-group">
-            <label>Email Address</label>
-            <input type="email" id="loginEmail" class="input-field" placeholder="student@example.com">
-          </div>
-          <div class="input-group">
-            <label>Password</label>
-            <input type="password" id="loginPass" class="input-field" placeholder="••••••••">
-          </div>
-          <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Sign In to Dashboard</button>
+    <div class="split-auth">
+      <!-- Left: Info Side -->
+      <div class="auth-info-side">
+        <div class="info-content">
+          <img id="loginLogo" src="https://cdn-icons-png.flaticon.com/512/5968/5968313.png" alt="Logo" class="floating-logo">
+          <h1 class="info-title">Master Your Studies with <span>Study Tracker</span></h1>
+          <p class="info-desc">The ultimate companion for competitive exams. Track your progress, automate your revision, and visualize your success.</p>
           
-          <div style="margin-top: 24px; text-align: center; display: flex; flex-direction: column; gap: 12px;">
-            <a href="#" onclick="showAuthTab('register')" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">New student? <span style="color: var(--primary); font-weight: 600;">Request Access</span></a>
-            <a href="#" onclick="forgotPassword()" style="color: var(--text-dim); font-size: 0.75rem; text-decoration: none;">Forgot password?</a>
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="f-icon">📅</div>
+              <div class="f-text">
+                <h3>7-Stage Revision</h3>
+                <p>Scientific scheduling for long-term retention.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="f-icon">📊</div>
+              <div class="f-text">
+                <h3>Insights & Analytics</h3>
+                <p>Visualize your subject mastery and trends.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="f-icon">☁️</div>
+              <div class="f-text">
+                <h3>Cloud Sync</h3>
+                <p>Access your study log from any device.</p>
+              </div>
+            </div>
           </div>
         </div>
-
-        <!-- Register Form (Hidden by default) -->
-        <div id="registerForm" style="display: none;">
-          <div class="input-group"><label>Full Name</label><input type="text" id="regName" class="input-field"></div>
-          <div class="input-group"><label>Email</label><input type="email" id="regEmail" class="input-field"></div>
-          <div class="input-group"><label>Phone</label><input type="text" id="regPhone" class="input-field"></div>
-          <div class="input-group"><label>Password</label><input type="password" id="regPass" class="input-field"></div>
-          <button class="btn btn-primary" onclick="doRegister()">Send Request</button>
-          <div style="margin-top: 20px; text-align: center;">
-            <a href="#" onclick="showAuthTab('login')" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">Back to <span style="color: var(--primary); font-weight: 600;">Login</span></a>
-          </div>
+        <div class="info-footer">
+          © 2026 Study Tracker • Professional Education Tools
         </div>
+      </div>
 
-        <div id="loginMsg" style="margin-top: 15px;"></div>
-        <div id="registerMsg" style="margin-top: 15px;"></div>
+      <!-- Right: Form Side -->
+      <div class="auth-form-side">
+        <div class="auth-card">
+          <div class="auth-header">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Sign in to your dashboard</p>
+          </div>
+
+          <!-- Login Form -->
+          <div id="loginForm">
+            <div class="input-group">
+              <label>Email Address</label>
+              <input type="email" id="loginEmail" class="input-field" placeholder="student@example.com">
+            </div>
+            <div class="input-group">
+              <label>Password</label>
+              <input type="password" id="loginPass" class="input-field" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Sign In to Dashboard</button>
+            
+            <div class="auth-actions">
+              <a href="#" onclick="showAuthTab('register')">New student? <span>Request Access</span></a>
+              <a href="#" onclick="forgotPassword()">Forgot password?</a>
+            </div>
+          </div>
+
+          <!-- Register Form (Hidden) -->
+          <div id="registerForm" style="display: none;">
+            <div class="input-group"><label>Full Name</label><input type="text" id="regName" class="input-field"></div>
+            <div class="input-group"><label>Email</label><input type="email" id="regEmail" class="input-field"></div>
+            <div class="input-group"><label>Phone</label><input type="text" id="regPhone" class="input-field"></div>
+            <div class="input-group"><label>Password</label><input type="password" id="regPass" class="input-field"></div>
+            <button class="btn btn-primary" onclick="doRegister()">Send Request</button>
+            <div style="margin-top: 20px; text-align: center;">
+              <a href="#" onclick="showAuthTab('login')" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">Back to <span style="color: var(--primary); font-weight: 600;">Login</span></a>
+            </div>
+          </div>
+
+          <div id="loginMsg" style="margin-top: 15px;"></div>
+          <div id="registerMsg" style="margin-top: 15px;"></div>
+        </div>
       </div>
     </div>
   </div>
