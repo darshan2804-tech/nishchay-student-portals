@@ -205,3 +205,40 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #f
 .flex-row { display: flex; align-items: center; gap: 12px; }
 .badge { font-size: 0.65rem; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; }
 .badge-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+/* ── Calendar Grid ── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+.cal-date.today {
+  border: 1px solid var(--primary);
+  background: hsla(var(--p-h), var(--p-s), 60%, 0.1) !important;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* ── Modals ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; animation: fadeUp 0.3s var(--smooth); }
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border-rich);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+}
