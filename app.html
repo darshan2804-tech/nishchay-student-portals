@@ -199,8 +199,11 @@
             </div>
 
             <!-- Exam Countdown -->
-            <div class="card card-glass" onclick="openExamModal()" style="cursor: pointer;">
-              <h3>Exam Countdown</h3>
+            <div class="card card-glass">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Exam Countdown</h3>
+                <button class="btn" onclick="openExamModal()" style="width: auto; padding: 6px 12px; font-size: 0.7rem; background: var(--primary-pale); color: var(--primary); border: 1px solid var(--primary);">⚙️ Set Dates</button>
+              </div>
               <div style="display: flex; gap: 15px; margin-top: 15px;">
                 <div style="flex: 1;">
                   <div style="font-size: 0.6rem; color: var(--text-dim);">JEE MAINS</div>
@@ -211,7 +214,7 @@
                   <div id="advDays" style="font-size: 1.8rem; font-weight: 800; color: var(--accent);">--</div>
                 </div>
               </div>
-              <p id="mainDateDisp" style="font-size: 0.65rem; color: var(--text-dim); margin-top: 10px;">Tap to set dates</p>
+              <p id="mainDateDisp" style="font-size: 0.65rem; color: var(--text-dim); margin-top: 10px; display: none;"></p>
             </div>
           </div>
 
