@@ -156,7 +156,6 @@ function switchTab(name) {
   
   if (name === 'dash') renderDashboard();
   if (name === 'today') renderToday();
-  if (name === 'calendar') renderCalendar();
   if (name === 'log') renderLog();
   if (name === 'tools') initTools();
 }
@@ -227,6 +226,10 @@ function showResult(entry) {
       <span style="color:var(--text-muted);">${new Date(r.datetime).toLocaleDateString()} ${new Date(r.datetime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
     </div>
   `).join('');
+  
+  const saveBtn = document.getElementById('addToCalIcsBtn');
+  if (saveBtn) saveBtn.textContent = 'Add to my calendar';
+  
   rc.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -327,65 +330,6 @@ async function deleteEntry(id) {
   if (!confirm('Are you sure you want to delete this topic?')) return;
   await _db.collection('users').doc(App.user.uid).collection('entries').doc(id).delete();
   showToast('Topic deleted.');
-}
-
-function renderCalendar() {
-  const grid = document.getElementById('calendarGrid');
-  const title = document.getElementById('calMonthYear');
-  if (!grid || !title) return;
-
-  const year = curCalDate.getFullYear(), month = curCalDate.getMonth();
-  title.textContent = curCalDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = todayStr();
-
-  const eventMap = {};
-  App.entries.forEach(e => e.revisions.forEach(r => {
-    const ds = toLocalDate(new Date(r.datetime));
-    if (!eventMap[ds]) eventMap[ds] = 0;
-    eventMap[ds]++;
-  }));
-
-  let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div style="font-size:0.6rem; color:var(--text-dim); font-weight:700; padding:10px 0;">${d}</div>`).join('');
-  
-  for (let i = 0; i < firstDay; i++) html += '<div></div>';
-  
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ds = `${year}-${p(month+1)}-${p(d)}`;
-    const count = eventMap[ds] || 0;
-    html += `
-      <div class="cal-date ${ds === today ? 'today' : ''}" style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:10px; cursor:pointer; background:var(--surface2);" onclick="showDayDetails('${ds}')">
-        ${d}
-        ${count ? `<div style="width:4px; height:4px; border-radius:50%; background:var(--primary); margin-top:2px;"></div>` : ''}
-      </div>
-    `;
-  }
-  grid.innerHTML = html;
-}
-
-function showDayDetails(dateStr) {
-  const wrap = document.getElementById('calDayDetails');
-  const cont = document.getElementById('calDetailsContent');
-  wrap.style.display = 'block';
-  
-  const events = [];
-  App.entries.forEach(e => e.revisions.forEach(r => {
-    if (toLocalDate(new Date(r.datetime)) === dateStr) {
-      events.push({ topic: e.topic, label: r.label });
-    }
-  }));
-
-  if (!events.length) {
-    cont.innerHTML = '<p style="color:var(--text-dim);">No revisions on this day.</p>';
-  } else {
-    cont.innerHTML = events.map(ev => `
-      <div class="card" style="padding:12px 16px; margin-bottom:10px; font-size:0.85rem;">
-        <strong>${ev.topic}</strong> — ${ev.label}
-      </div>
-    `).join('');
-  }
 }
 
 function initTools() {
@@ -544,3 +488,9 @@ window.saveExamDates = async () => {
   App.examDates = { mains, adv };
   window.closeExamModal(); renderCountdown();
 };
+window.deleteEntry = deleteEntry;
+window.rateRevision = rateRevision;
+window.saveMistake = saveMistake;
+window.showFormulas = showFormulas;
+window.openMistakeForm = () => document.getElementById('mistakeModal').classList.add('active');
+window.closeMistakeForm = () => document.getElementById('mistakeModal').classList.remove('active');

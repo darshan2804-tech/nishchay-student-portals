@@ -98,7 +98,7 @@
             <span>📋</span> <span class="nav-text">Revision Today</span>
           </a>
           <a href="#" id="nav-calendar" class="nav-link" onclick="switchTab('calendar')">
-            <span>📅</span> <span class="nav-text">Study Calendar</span>
+            <span>📅</span> <span class="nav-text">My Calendar</span>
           </a>
           <a href="#" id="nav-add" class="nav-link" onclick="switchTab('add')">
             <span>✏️</span> <span class="nav-text">Add Topic</span>
@@ -208,21 +208,8 @@
         </div>
 
         <!-- PAGE: Calendar -->
-        <div id="page-calendar" class="page">
-          <div class="flex-row" style="justify-content: space-between; margin-bottom: 24px;">
-            <h1 id="calMonthYear">Month Year</h1>
-            <div style="display: flex; gap: 10px;">
-              <button class="btn" onclick="changeMonth(-1)" style="width: auto; padding: 8px 12px;">◀</button>
-              <button class="btn" onclick="changeMonth(1)" style="width: auto; padding: 8px 12px;">▶</button>
-            </div>
-          </div>
-          <div class="card">
-            <div id="calendarGrid" class="cal-grid"></div>
-          </div>
-          <div id="calDayDetails" style="display: none; margin-top: 24px;">
-            <h3 style="margin-bottom: 15px;">Schedule for the Day</h3>
-            <div id="calDetailsContent"></div>
-          </div>
+        <div id="page-calendar" class="page" style="height: 100%; padding: 0; overflow: hidden;">
+          <iframe src="https://study-calendar-standalone.vercel.app" style="width: 100%; height: 100%; border: none; background: var(--bg);" id="calendarIframe"></iframe>
         </div>
 
         <!-- PAGE: Add -->
@@ -325,6 +312,7 @@
     <nav class="bottom-nav">
       <a href="#" id="nav-dash-mob" onclick="switchTab('dash')">📊</a>
       <a href="#" id="nav-today-mob" onclick="switchTab('today')">📋</a>
+      <a href="#" id="nav-calendar-mob" onclick="switchTab('calendar')">📅</a>
       <a href="#" id="nav-add-mob" onclick="switchTab('add')">✏️</a>
       <a href="#" id="nav-log-mob" onclick="switchTab('log')">📚</a>
       <a href="#" id="nav-tools-mob" onclick="switchTab('tools')">🛠️</a>
