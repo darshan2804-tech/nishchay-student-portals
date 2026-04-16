@@ -205,23 +205,7 @@ function switchTab(name) {
   if (name === 'today') renderToday();
   if (name === 'log') renderLog();
   if (name === 'tools') initTools();
-  
-  if (name === 'calendar') {
-    const iframe = document.getElementById('calendarIframe');
-    if (iframe && !iframe.dataset.loaded) {
-      const email = sessionStorage.getItem('sh_email');
-      const passArr = sessionStorage.getItem('sh_pass');
-      if (email && passArr) {
-        const pass = atob(passArr);
-        const baseUrl = 'https://study-calendar-standalone.vercel.app?embedded=true';
-        iframe.src = `${baseUrl}#email=${encodeURIComponent(email)}&pass=${encodeURIComponent(pass)}`;
-      } else {
-        // No SSO credentials — just load without auto-login
-        iframe.src = 'https://study-calendar-standalone.vercel.app?embedded=true';
-      }
-      iframe.dataset.loaded = 'true';
-    }
-  }
+  if (name === 'calendar') renderNativeCalendar();
 }
 
 function refreshActivePage() {
@@ -759,6 +743,142 @@ function renderHeatmap() {
     </div>`).join('');
 }
 
+// ── Native Calendar ──
+let calDate = new Date();
+
+function calPrevMonth() { calDate.setMonth(calDate.getMonth() - 1); renderNativeCalendar(); }
+function calNextMonth() { calDate.setMonth(calDate.getMonth() + 1); renderNativeCalendar(); }
+function calToday() { calDate = new Date(); renderNativeCalendar(); }
+
+function renderNativeCalendar() {
+  const grid = document.getElementById('nativeCalGrid');
+  const label = document.getElementById('calMonthLabel');
+  if (!grid) return;
+
+  const year = calDate.getFullYear();
+  const month = calDate.getMonth();
+  const todayStr_ = toLocalDate(new Date());
+  label.textContent = calDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+  // Build event map from entries
+  const eventMap = {};
+  App.entries.forEach(e => {
+    (e.revisions || []).forEach(r => {
+      const dt = r.datetime ? new Date(r.datetime) : null;
+      if (!dt || isNaN(dt)) return;
+      const ds = toLocalDate(dt);
+      if (!eventMap[ds]) eventMap[ds] = [];
+      eventMap[ds].push({ topic: e.topic, subject: e.subject, label: r.label, id: e.id, datetime: dt });
+    });
+  });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevDays = new Date(year, month, 0).getDate();
+
+  let cells = [];
+  // Prev month
+  for (let i = firstDay - 1; i >= 0; i--)
+    cells.push({ day: prevDays - i, cur: false, ds: null });
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${year}-${p(month+1)}-${p(d)}`;
+    cells.push({ day: d, cur: true, ds, isToday: ds === todayStr_, evs: eventMap[ds] || [] });
+  }
+  // Next month
+  let fill = cells.length % 7 === 0 ? 0 : 7 - (cells.length % 7);
+  for (let d = 1; d <= fill; d++)
+    cells.push({ day: d, cur: false, ds: null });
+
+  const subjectColor = s => s === 'Physics' ? '#6366f1' : s === 'Chemistry' ? '#f59e0b' : s === 'Maths' ? '#10b981' : '#a855f7';
+
+  grid.innerHTML = cells.map(c => {
+    if (!c.cur) return `<div style="min-height:90px;background:rgba(255,255,255,0.01);border-radius:10px;padding:8px;"><span style="font-size:0.75rem;color:rgba(255,255,255,0.15);">${c.day}</span></div>`;
+    const evs = c.evs || [];
+    const dots = evs.slice(0, 3).map(ev => `<div style="display:flex;align-items:center;gap:4px;margin-top:2px;"><div style="width:6px;height:6px;border-radius:50%;background:${subjectColor(ev.subject)};flex-shrink:0;"></div><div style="font-size:0.55rem;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px;">${ev.topic}</div></div>`).join('');
+    const more = evs.length > 3 ? `<div style="font-size:0.5rem;color:var(--text-dim);margin-top:2px;">+${evs.length-3} more</div>` : '';
+    const border = c.isToday ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)';
+    const bg = c.isToday ? 'hsla(var(--p-h),var(--p-s),60%,0.08)' : 'rgba(255,255,255,0.02)';
+    return `<div onclick="openCalDay('${c.ds}')" style="min-height:90px;background:${bg};border:${border};border-radius:10px;padding:8px;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='rgba(99,102,241,0.1)'" onmouseleave="this.style.background='${bg}'">
+      <span style="font-size:0.8rem;font-weight:${c.isToday ? 800 : 600};color:${c.isToday ? 'var(--primary)' : '#fff'}">${c.day}</span>
+      ${dots}${more}
+    </div>`;
+  }).join('');
+}
+
+function openCalDay(ds) {
+  const panel = document.getElementById('calDayPanel');
+  const title = document.getElementById('calDayTitle');
+  const list = document.getElementById('calDayEvents');
+  panel.style.display = 'block';
+  const d = new Date(ds + 'T00:00:00');
+  title.textContent = d.toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const eventMap = {};
+  App.entries.forEach(e => {
+    (e.revisions || []).forEach(r => {
+      const dt = r.datetime ? new Date(r.datetime) : null;
+      if (!dt || isNaN(dt)) return;
+      if (toLocalDate(dt) === ds) {
+        if (!eventMap[e.id]) eventMap[e.id] = { ...e, times: [] };
+        eventMap[e.id].times.push({ label: r.label, time: dt.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}) });
+      }
+    });
+  });
+  const entries_ = Object.values(eventMap);
+  if (!entries_.length) {
+    list.innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:24px;">☕ No revisions scheduled.</p>';
+    return;
+  }
+  const subjectColor = s => s === 'Physics' ? '#6366f1' : s === 'Chemistry' ? '#f59e0b' : s === 'Maths' ? '#10b981' : '#a855f7';
+  list.innerHTML = entries_.map(e => `
+    <div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="width:4px;min-height:40px;border-radius:4px;background:${subjectColor(e.subject)};flex-shrink:0;"></div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:0.95rem;">${e.topic}</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px;">${e.times.map(t => `${t.label} • ${t.time}`).join(' | ')}</div>
+      </div>
+      <button onclick="deleteEntry('${e.id}')" style="background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer;">🗑️</button>
+    </div>`).join('');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Search / Log Utilities ──
+function filterLog() {
+  const q = document.getElementById('searchInput')?.value?.trim() || '';
+  App.searchQuery = q;
+  document.getElementById('searchClear').style.display = q ? 'block' : 'none';
+  renderLog();
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  App.searchQuery = '';
+  document.getElementById('searchClear').style.display = 'none';
+  renderLog();
+}
+
+function updateTodayBadge() {
+  const count = getTodayItems().length;
+  const badge = document.getElementById('todayBadge');
+  if (badge) badge.textContent = count > 0 ? count : '';
+}
+
+async function bulkNotifyToday() {
+  const items = getTodayItems();
+  if (!items.length) return showToast('No revisions today!');
+  showToast(`📬 ${items.length} revisions due today!`);
+  if (Notification.permission === 'granted') {
+    items.forEach(item => {
+      new Notification('Study Tracker: Revision Due', {
+        body: `${item.topic} — ${item.label}`,
+        icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968313.png'
+      });
+    });
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission().then(p => { if (p === 'granted') bulkNotifyToday(); });
+  }
+}
+
 // ── Utility Exports ──
 window.doLogin = doLogin;
 window.doRegister = doRegister;
@@ -769,18 +889,43 @@ window.switchTab = switchTab;
 window.addEntry = addEntry;
 window.savePendingEntry = savePendingEntry;
 window.toggleTheme = () => { document.body.classList.toggle('dark-mode'); };
-window.openExamModal = () => document.getElementById('examModal').classList.add('active');
+window.openExamModal = () => {
+  // Pre-populate existing dates
+  if (App.examDates.mains) document.getElementById('mainDate').value = App.examDates.mains;
+  if (App.examDates.adv) document.getElementById('advDate').value = App.examDates.adv;
+  document.getElementById('examModal').classList.add('active');
+};
 window.closeExamModal = () => document.getElementById('examModal').classList.remove('active');
 window.saveExamDates = async () => {
   const mains = document.getElementById('mainDate').value;
   const adv = document.getElementById('advDate').value;
+  if (!mains && !adv) return showToast('Please set at least one date.');
   await _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv });
   App.examDates = { mains, adv };
-  window.closeExamModal(); renderCountdown();
+  window.closeExamModal();
+  renderCountdown();
+  showToast('📅 Exam dates saved!');
 };
 window.deleteEntry = deleteEntry;
 window.rateRevision = rateRevision;
 window.saveMistake = saveMistake;
+window.deleteMistake = deleteMistake;
 window.showFormulas = showFormulas;
 window.openMistakeForm = () => document.getElementById('mistakeModal').classList.add('active');
 window.closeMistakeForm = () => document.getElementById('mistakeModal').classList.remove('active');
+window.setPomoMode = setPomoMode;
+window.startPomo = startPomo;
+window.logStudyTime = logStudyTime;
+window.logQuestionsAttempted = logQuestionsAttempted;
+window.saveMockTest = saveMockTest;
+window.showFlashcard = showFlashcard;
+window.flipFlashcard = flipFlashcard;
+window.nextFlashcard = nextFlashcard;
+window.prevFlashcard = prevFlashcard;
+window.filterLog = filterLog;
+window.clearSearch = clearSearch;
+window.bulkNotifyToday = bulkNotifyToday;
+window.calPrevMonth = calPrevMonth;
+window.calNextMonth = calNextMonth;
+window.calToday = calToday;
+window.openCalDay = openCalDay;

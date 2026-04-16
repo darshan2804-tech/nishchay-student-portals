@@ -245,8 +245,38 @@
         </div>
 
         <!-- PAGE: Calendar -->
-        <div id="page-calendar" class="page" style="height: 100%; padding: 0; overflow: hidden;">
-          <iframe src="https://study-calendar-standalone.vercel.app?embedded=true" style="width: 100%; height: 100%; border: none; background: var(--bg);" id="calendarIframe"></iframe>
+        <div id="page-calendar" class="page">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <div>
+              <h1>My Calendar</h1>
+              <p style="color:var(--text-dim);font-size:0.85rem;" id="calMonthLabel">Loading...</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button onclick="calPrevMonth()" style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">← Prev</button>
+              <button onclick="calToday()" style="background:var(--primary-pale);border:1px solid var(--primary);color:var(--primary);padding:8px 16px;border-radius:10px;cursor:pointer;font-weight:700;">Today</button>
+              <button onclick="calNextMonth()" style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">Next →</button>
+            </div>
+          </div>
+          <!-- Day headers -->
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;">
+            <div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--text-dim);padding:8px 0;">SUN</div>
+            <div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--text-dim);padding:8px 0;">MON</div>
+            <div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--text-dim);padding:8px 0;">TUE</div>
+            <div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--text-dim);padding:8px 0;">WED</div>
+            <div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--text-dim);padding:8px 0;">THU</div>
+            <div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--text-dim);padding:8px 0;">FRI</div>
+            <div style="text-align:center;font-size:0.65rem;font-weight:700;color:var(--text-dim);padding:8px 0;">SAT</div>
+          </div>
+          <!-- Calendar Grid -->
+          <div id="nativeCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+          <!-- Day Detail Panel -->
+          <div id="calDayPanel" style="display:none;margin-top:24px;" class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <h3 id="calDayTitle">Events</h3>
+              <button onclick="document.getElementById('calDayPanel').style.display='none'" style="background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer;">✕</button>
+            </div>
+            <div id="calDayEvents"></div>
+          </div>
         </div>
 
         <!-- PAGE: Add -->
