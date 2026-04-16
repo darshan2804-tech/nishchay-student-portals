@@ -102,12 +102,18 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #f
   width: 100%;
   max-width: 440px;
   background: var(--surface-dim);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(25px);
   border: 1px solid var(--border-rich);
   border-radius: var(--radius-lg);
-  padding: 40px;
-  box-shadow: var(--shadow-lg);
+  padding: 48px 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.6s var(--smooth);
 }
+.auth-header { text-align: center; margin-bottom: 32px; }
+.auth-header img { filter: drop-shadow(0 0 15px var(--primary-pale)); transition: transform 0.3s var(--smooth); }
+.auth-header img:hover { transform: scale(1.05); }
+.auth-title { font-size: 2rem; letter-spacing: -0.02em; margin-bottom: 8px; background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.auth-subtitle { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 16px; }
 
 /* Sidebar Styling */
 .sidebar-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; padding: 0 12px; }
