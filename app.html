@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#050816">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Study Tracker | Academy Portal</title>
+  <title>Study Tracker | Student Portal</title>
   
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -25,9 +25,9 @@
     <div class="auth-wrapper">
       <div class="auth-card">
         <div class="auth-header">
-          <div class="auth-logo">📚</div>
-          <h1 class="auth-title">Nishchay Academy</h1>
-          <p class="auth-subtitle">Student Portal • Study Tracker</p>
+          <img id="loginLogo" src="https://cdn-icons-png.flaticon.com/512/5968/5968313.png" alt="Logo" style="width: 50px; height: 50px; margin-bottom: 20px;">
+          <h1 class="auth-title">STUDY TRACKER</h1>
+          <p class="auth-subtitle">Professional Student Portal</p>
           <div class="badge badge-pending">🔒 Authorized Access Only</div>
         </div>
 
@@ -71,7 +71,7 @@
   <div class="screen" id="pendingScreen" style="display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px; text-align:center;">
     <div style="font-size: 4rem; margin-bottom: 20px;">⏳</div>
     <h1>Access Pending</h1>
-    <p style="color: var(--text-muted); margin: 15px 0 30px; max-width: 320px;">Your account is awaiting manual approval from Nishchay Academy admin.</p>
+    <p style="color: var(--text-muted); margin: 15px 0 30px; max-width: 320px;">Your account is awaiting manual approval from the admin.</p>
     <button class="btn btn-primary" onclick="checkApproval()" style="max-width:200px;">Check Status</button>
     <button onclick="doLogout()" style="margin-top:20px; background:none; border:none; color:var(--text-dim); font-size:0.8rem; cursor:pointer;">Sign Out</button>
   </div>
@@ -83,10 +83,10 @@
       <!-- Desktop Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-logo">
-          <span class="sidebar-logo-icon">🎯</span>
+          <img id="sidebarLogo" src="https://cdn-icons-png.flaticon.com/512/5968/5968313.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 8px;">
           <div class="sl-text">
-            <div style="font-size: 1.1rem; font-weight: 800; color: #fff;">Nishchay</div>
-            <div style="font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Academy Portal</div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #fff;">STUDY</div>
+            <div style="font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Tracker Portal</div>
           </div>
         </div>
 

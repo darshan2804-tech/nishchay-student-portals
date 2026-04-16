@@ -87,7 +87,21 @@ function doLogout() {
   window.location.reload();
 }
 
+async function loadBranding() {
+  try {
+    const doc = await _db.collection('settings').doc('branding').get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.logoUrl) {
+        document.getElementById('loginLogo').src = data.logoUrl;
+        document.getElementById('sidebarLogo').src = data.logoUrl;
+      }
+    }
+  } catch(e) { console.error('Logo load failed', e); }
+}
+
 _auth.onAuthStateChanged(async user => {
+  loadBranding();
   if (!user) return showScreen('authScreen');
   App.user = user;
   const doc = await _db.collection('users').doc(user.uid).get();
