@@ -233,6 +233,7 @@ function syncInputTime() {
 
 // ── Tracker Logic ──
 const INTERVALS = [
+  { label: 'Immediate', mins: 0, type: 'short' },
   { label: '12 hrs', mins: 720, type: 'short' },
   { label: 'Day 1', mins: 1440, type: 'long' },
   { label: 'Day 2', mins: 2880, type: 'long' },
@@ -891,8 +892,8 @@ window.savePendingEntry = savePendingEntry;
 window.toggleTheme = () => { document.body.classList.toggle('dark-mode'); };
 window.openExamModal = () => {
   // Pre-populate existing dates
-  if (App.examDates.mains) document.getElementById('mainDate').value = App.examDates.mains;
-  if (App.examDates.adv) document.getElementById('advDate').value = App.examDates.adv;
+  if (App.examDates && App.examDates.mains) document.getElementById('mainDate').value = App.examDates.mains;
+  if (App.examDates && App.examDates.adv) document.getElementById('advDate').value = App.examDates.adv;
   document.getElementById('examModal').classList.add('active');
 };
 window.closeExamModal = () => document.getElementById('examModal').classList.remove('active');
