@@ -62,7 +62,12 @@ async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   if (!email || !pass) return showToast('Please enter both email and password.');
-  try { await _auth.signInWithEmailAndPassword(email, pass); }
+  try { 
+    await _auth.signInWithEmailAndPassword(email, pass); 
+    // Securely store for Calendar SSO (Session only)
+    sessionStorage.setItem('sh_email', email);
+    sessionStorage.setItem('sh_pass', btoa(pass)); // Basic obscurity
+  }
   catch(e) { showToast(e.message); }
 }
 
@@ -172,6 +177,20 @@ function switchTab(name) {
   if (name === 'today') renderToday();
   if (name === 'log') renderLog();
   if (name === 'tools') initTools();
+  
+  if (name === 'calendar') {
+    const email = sessionStorage.getItem('sh_email');
+    const passArr = sessionStorage.getItem('sh_pass');
+    if (email && passArr) {
+      const pass = atob(passArr);
+      const iframe = document.getElementById('calendarIframe');
+      if (iframe) {
+        // Append hash for auto-login
+        const baseUrl = 'https://study-calendar-standalone.vercel.app?embedded=true';
+        iframe.src = `${baseUrl}#email=${encodeURIComponent(email)}&pass=${encodeURIComponent(pass)}`;
+      }
+    }
+  }
 }
 
 function refreshActivePage() {
