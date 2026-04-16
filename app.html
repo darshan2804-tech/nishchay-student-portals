@@ -228,17 +228,15 @@
       min-height: 100vh;
       display: flex;
       overflow: hidden;
-      /* Prevent body scroll, use child scroll instead */
-      flex-direction: column;
-      /* Default for mobile */
     }
 
-    /* Support desktop sidebar layout */
+    /* Support for rail layout on screens with sidebar */
     @media (min-width: 768px) {
-      body {
+      .screen.active {
         flex-direction: row !important;
       }
     }
+
 
 
     /* -- SCREENS -- */
@@ -250,7 +248,10 @@
     .screen.active {
       display: flex;
       flex-direction: column;
+      width: 100%;
+      height: 100%;
     }
+
 
     #authScreen {
       background: #050816;
