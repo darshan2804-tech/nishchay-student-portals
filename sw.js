@@ -40,12 +40,12 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
 
-  // Firebase / Brevo / Google APIs → Network only (never cache auth/data)
+  // Firebase / Google APIs → Network only (never cache auth/data)
   if (
     url.hostname.includes('firebase') ||
     url.hostname.includes('firestore') ||
     url.hostname.includes('googleapis.com') ||
-    url.hostname.includes('brevo.com') ||
+
     url.hostname.includes('accounts.google.com')
   ) {
     return; // Let browser handle normally
