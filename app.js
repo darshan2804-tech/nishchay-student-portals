@@ -179,16 +179,19 @@ function switchTab(name) {
   if (name === 'tools') initTools();
   
   if (name === 'calendar') {
-    const email = sessionStorage.getItem('sh_email');
-    const passArr = sessionStorage.getItem('sh_pass');
-    if (email && passArr) {
-      const pass = atob(passArr);
-      const iframe = document.getElementById('calendarIframe');
-      if (iframe) {
-        // Append hash for auto-login
+    const iframe = document.getElementById('calendarIframe');
+    if (iframe && !iframe.dataset.loaded) {
+      const email = sessionStorage.getItem('sh_email');
+      const passArr = sessionStorage.getItem('sh_pass');
+      if (email && passArr) {
+        const pass = atob(passArr);
         const baseUrl = 'https://study-calendar-standalone.vercel.app?embedded=true';
         iframe.src = `${baseUrl}#email=${encodeURIComponent(email)}&pass=${encodeURIComponent(pass)}`;
+      } else {
+        // No SSO credentials — just load without auto-login
+        iframe.src = 'https://study-calendar-standalone.vercel.app?embedded=true';
       }
+      iframe.dataset.loaded = 'true';
     }
   }
 }
