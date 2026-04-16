@@ -88,6 +88,9 @@ async function doRegister() {
 }
 
 function doLogout() {
+  if (!confirm('Are you sure you want to sign out?')) return;
+  sessionStorage.removeItem('sh_email');
+  sessionStorage.removeItem('sh_pass');
   _auth.signOut();
   window.location.reload();
 }
@@ -143,6 +146,7 @@ function setupListeners() {
       App.entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       refreshActivePage();
       updateTodayBadge();
+      computeStreak();
     });
   App._unsubs.push(unsub);
 
@@ -154,6 +158,30 @@ function setupListeners() {
       if (document.getElementById('page-today').classList.contains('active')) renderToday();
     });
   App._unsubs.push(unsubToday);
+
+  // Load mistakes
+  _db.collection('users').doc(App.user.uid).collection('data').doc('mistakes')
+    .onSnapshot(snap => {
+      App.mistakes = snap.exists ? (snap.data().payload || []) : [];
+      if (document.getElementById('page-tools')?.classList.contains('active')) renderMistakes();
+    });
+
+  // Load mock tests
+  _db.collection('users').doc(App.user.uid).collection('mocks')
+    .orderBy('date', 'desc')
+    .onSnapshot(snap => {
+      App.mocks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (document.getElementById('page-tools')?.classList.contains('active')) renderMockTests();
+    });
+
+  // Load study time
+  _db.collection('users').doc(App.user.uid).collection('studytime')
+    .orderBy('date', 'desc').limit(30)
+    .onSnapshot(snap => {
+      App.studyTime = {};
+      snap.docs.forEach(d => { App.studyTime[d.data().date] = d.data(); });
+      if (document.getElementById('page-tools')?.classList.contains('active')) renderStudyTime();
+    });
 }
 
 async function loadSettings() {
@@ -368,30 +396,209 @@ async function deleteEntry(id) {
   showToast('Topic deleted.');
 }
 
+// ── Pomodoro Timer ──
+let pomoInterval = null;
+let pomoRunning = false;
+let pomoSecondsLeft = 25 * 60;
+let pomoDuration = 25 * 60;
+
+function setPomoMode(mins, label) {
+  if (pomoInterval) { clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false; }
+  pomoDuration = pomoSecondsLeft = mins * 60;
+  document.getElementById('pomoTime').textContent = `${String(Math.floor(pomoSecondsLeft / 60)).padStart(2,'0')}:00`;
+  document.getElementById('pomoLabel').textContent = label;
+  document.getElementById('pomoStartBtn').textContent = '▶ Start Session';
+}
+
+function startPomo() {
+  const btn = document.getElementById('pomoStartBtn');
+  if (pomoRunning) {
+    clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
+    btn.textContent = '▶ Resume';
+  } else {
+    pomoRunning = true;
+    btn.textContent = '⏸ Pause';
+    pomoInterval = setInterval(() => {
+      pomoSecondsLeft--;
+      const m = Math.floor(pomoSecondsLeft / 60);
+      const s = pomoSecondsLeft % 60;
+      document.getElementById('pomoTime').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if (pomoSecondsLeft <= 0) {
+        clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
+        btn.textContent = '▶ Start Session';
+        pomoSecondsLeft = pomoDuration;
+        showToast('🎉 Session complete! Take a break.');
+        // Audio alert
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator(); osc.connect(ctx.destination);
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.start(); osc.stop(ctx.currentTime + 0.5);
+        } catch(e) {}
+      }
+    }, 1000);
+  }
+}
+
+// ── Questions Attempted ──
+async function logQuestionsAttempted() {
+  const count = parseInt(document.getElementById('qAttemptedInput')?.value);
+  const subj = document.getElementById('qSubjectSelect')?.value;
+  if (!count || count < 1) return showToast('Enter a valid count');
+  const ts = todayStr();
+  await _db.collection('users').doc(App.user.uid).collection('daily').doc(ts)
+    .set({ questionsAttempted: firebase.firestore.FieldValue.increment(count), lastSubject: subj }, { merge: true });
+  document.getElementById('qAttemptedInput').value = '';
+  showToast(`✅ Logged ${count} questions for ${subj}`);
+}
+
+// ── Study Time ──
+async function logStudyTime() {
+  const hours = parseFloat(document.getElementById('studyHoursInput')?.value);
+  const subj = document.getElementById('studySubjectSelect')?.value;
+  if (!hours || hours <= 0) return showToast('Enter valid hours');
+  const ts = todayStr();
+  await _db.collection('users').doc(App.user.uid).collection('studytime').doc(ts).set({
+    date: ts, subject: subj, hours: firebase.firestore.FieldValue.increment(hours)
+  }, { merge: true });
+  document.getElementById('studyHoursInput').value = '';
+  showToast(`✅ Logged ${hours}h of ${subj}`);
+}
+
+function renderStudyTime() {
+  const c = document.getElementById('studyTimeList');
+  if (!c) return;
+  const entries = Object.values(App.studyTime).slice(0, 7);
+  if (!entries.length) { c.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:20px;">No study time logged yet.</p>'; return; }
+  c.innerHTML = entries.map(e => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div><div style="font-weight:600;font-size:0.85rem;">${e.date}</div><div style="font-size:0.7rem;color:var(--text-dim);">${e.subject}</div></div>
+      <div style="font-size:1.2rem;font-weight:800;color:var(--teal);">${typeof e.hours === 'number' ? e.hours.toFixed(1) : e.hours}h</div>
+    </div>`).join('');
+}
+
+// ── Mock Test Tracker ──
+async function saveMockTest() {
+  const score = parseFloat(document.getElementById('mockScore')?.value);
+  const maxScore = parseFloat(document.getElementById('mockMaxScore')?.value) || 300;
+  const testName = document.getElementById('mockName')?.value?.trim();
+  if (!score || !testName) return showToast('Fill all mock test fields');
+  await _db.collection('users').doc(App.user.uid).collection('mocks').add({
+    date: todayStr(), score, maxScore, testName,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  document.getElementById('mockScore').value = '';
+  document.getElementById('mockName').value = '';
+  document.getElementById('mockModal').classList.remove('active');
+  showToast('📊 Mock test logged!');
+}
+
+function renderMockTests() {
+  const c = document.getElementById('mockList');
+  if (!c) return;
+  if (!App.mocks.length) { c.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:20px;">No mock tests logged yet.</p>'; return; }
+  c.innerHTML = App.mocks.slice(0, 10).map(m => {
+    const pct = Math.round((m.score / m.maxScore) * 100);
+    const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--accent)' : 'var(--red)';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+      <div><div style="font-weight:600;font-size:0.85rem;">${m.testName}</div><div style="font-size:0.7rem;color:var(--text-dim);">${m.date}</div></div>
+      <div style="text-align:right;"><div style="font-size:1.1rem;font-weight:800;color:${color};">${m.score}/${m.maxScore}</div><div style="font-size:0.65rem;color:${color};">${pct}%</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ── Flashcards ──
+const FLASHCARDS = {
+  Physics: [
+    {q: 'Newton\'s 2nd Law', a: 'F = ma'},
+    {q: 'Work-Energy Theorem', a: 'W = ΔKE = ½mv² - ½mu²'},
+    {q: 'Coulomb\'s Law', a: 'F = kq₁q₂/r²'},
+    {q: 'Ohm\'s Law', a: 'V = IR'},
+    {q: 'Snell\'s Law', a: 'n₁sinθ₁ = n₂sinθ₂'},
+  ],
+  Chemistry: [
+    {q: 'Ideal Gas Law', a: 'PV = nRT'},
+    {q: 'Mole Concept', a: 'n = m/M = N/Nₐ'},
+    {q: 'pH formula', a: 'pH = -log[H⁺]'},
+    {q: 'Nernst Equation', a: 'E = E° - (RT/nF)lnQ'},
+    {q: 'de Broglie', a: 'λ = h/mv'},
+  ],
+  Maths: [
+    {q: 'Quadratic Formula', a: 'x = (-b ± √(b²-4ac)) / 2a'},
+    {q: 'sin²x + cos²x', a: '= 1'},
+    {q: 'Integration of eˣ', a: '∫eˣ dx = eˣ + C'},
+    {q: 'Sum of AP', a: 'Sₙ = n/2 × (2a + (n-1)d)'},
+    {q: 'Area of Triangle', a: '= ½|x₁(y₂-y₃) + x₂(y₃-y₁) + x₃(y₁-y₂)|'},
+  ]
+};
+
+let flashcardIdx = 0;
+let flashcardSubj = 'Physics';
+let flashcardFlipped = false;
+
+function showFlashcard(subj) {
+  flashcardSubj = subj || flashcardSubj;
+  flashcardIdx = 0; flashcardFlipped = false;
+  renderFlashcard();
+}
+
+function renderFlashcard() {
+  const cards = FLASHCARDS[flashcardSubj];
+  const card = cards[flashcardIdx];
+  const fc = document.getElementById('flashcardFace');
+  const counter = document.getElementById('flashcardCounter');
+  if (!fc || !card) return;
+  fc.innerHTML = flashcardFlipped
+    ? `<div style="font-size:1.8rem;font-weight:800;color:var(--primary);font-family:serif;">${card.a}</div><div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">Answer</div>`
+    : `<div style="font-size:1rem;font-weight:600;color:#fff;">${card.q}</div><div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">Tap to reveal</div>`;
+  if (counter) counter.textContent = `${flashcardIdx + 1} / ${cards.length}`;
+}
+
+function flipFlashcard() { flashcardFlipped = !flashcardFlipped; renderFlashcard(); }
+function nextFlashcard() { const c = FLASHCARDS[flashcardSubj]; flashcardIdx = (flashcardIdx + 1) % c.length; flashcardFlipped = false; renderFlashcard(); }
+function prevFlashcard() { const c = FLASHCARDS[flashcardSubj]; flashcardIdx = (flashcardIdx - 1 + c.length) % c.length; flashcardFlipped = false; renderFlashcard(); }
+
+// ── Streak ──
+function computeStreak() {
+  const dates = new Set(App.entries.map(e => e.dateStr));
+  let streak = 0;
+  let d = new Date();
+  while (true) {
+    const ds = toLocalDate(d);
+    if (dates.has(ds)) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  App.streak = streak;
+  const el = document.getElementById('perfStreak');
+  if (el) el.textContent = streak;
+}
+
 function initTools() {
   renderMistakes();
+  renderMockTests();
+  renderStudyTime();
   showFormulas('Physics');
+  showFlashcard('Physics');
 }
 
 // ── Mistakes & Tools ──
 function renderMistakes() {
   const list = document.getElementById('mistakeList');
   if (!list) return;
-  // Load from firestore
-  _db.collection('users').doc(App.user.uid).collection('data').doc('mistakes').get().then(doc => {
-    const mistakes = doc.exists ? doc.data().payload : [];
-    if (!mistakes.length) {
-      list.innerHTML = '<p style="color:var(--text-dim); text-align:center; padding:20px;">No mistakes logged.</p>';
-      return;
-    }
-    list.innerHTML = mistakes.map(m => `
-      <div class="card" style="padding:12px; margin-bottom:8px;">
-        <div style="font-size:0.6rem; color:var(--accent); font-weight:700;">${m.subj} • ${m.type}</div>
-        <div style="font-weight:600; margin:4px 0;">${m.topic}</div>
-        <div style="font-size:0.75rem; color:var(--text-dim);">${m.note}</div>
+  const mistakes = App.mistakes || [];
+  if (!mistakes.length) {
+    list.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:20px;">No mistakes logged.</p>';
+    return;
+  }
+  list.innerHTML = mistakes.map((m, i) => `
+    <div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+      <div style="flex:1;">
+        <div style="font-size:0.6rem;color:var(--accent);font-weight:700;text-transform:uppercase;">${m.subj} • ${m.type}</div>
+        <div style="font-weight:600;margin:4px 0;font-size:0.9rem;">${m.topic}</div>
+        ${m.note ? `<div style="font-size:0.75rem;color:var(--text-dim);">${m.note}</div>` : ''}
       </div>
-    `).join('');
-  });
+      <button onclick="deleteMistake(${i})" style="background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer;flex-shrink:0;">🗑️</button>
+    </div>`).join('');
 }
 
 async function saveMistake() {
@@ -401,30 +608,56 @@ async function saveMistake() {
   const note = document.getElementById('mNote').value.trim();
   if (!topic) return showToast('Enter a topic!');
   
-  const doc = await _db.collection('users').doc(App.user.uid).collection('data').doc('mistakes').get();
-  const mistakes = doc.exists ? doc.data().payload : [];
+  const mistakes = [...(App.mistakes || [])];
   mistakes.unshift({ subj, type, topic, note, id: Date.now() });
-  
   await _db.collection('users').doc(App.user.uid).collection('data').doc('mistakes').set({ payload: mistakes });
+  document.getElementById('mTopic').value = '';
+  document.getElementById('mNote').value = '';
   showToast('Mistake logged!');
   closeMistakeForm();
-  renderMistakes();
+}
+
+async function deleteMistake(idx) {
+  if (!confirm('Delete this mistake?')) return;
+  const mistakes = [...(App.mistakes || [])];
+  mistakes.splice(idx, 1);
+  await _db.collection('users').doc(App.user.uid).collection('data').doc('mistakes').set({ payload: mistakes });
+  showToast('Deleted.');
 }
 
 function showFormulas(subj) {
   const list = document.getElementById('formulaList');
-  // Simple formula data
   const data = {
-    Physics: [{n:'F=ma', eq:'Newton\'s 2nd Law'}, {n:'v=u+at', eq:'Kinematics'}],
-    Chemistry: [{n:'n=m/M', eq:'Mole Concept'}, {n:'PV=nRT', eq:'Ideal Gas'}],
-    Maths: [{n:'sin²x+cos²x=1', eq:'Identity'}, {n:'∫eˣ dx = eˣ', eq:'Integral'}]
+    Physics: [
+      {n:'F=ma', eq:'Newton\'s 2nd Law'},{n:'v=u+at', eq:'Kinematics 1'},{n:'v²=u²+2as', eq:'Kinematics 3'},
+      {n:'KE=½mv²', eq:'Kinetic Energy'},{n:'p=mv', eq:'Linear Momentum'},{n:'F=kq₁q₂/r²', eq:'Coulomb\'s Law'},
+      {n:'V=IR', eq:'Ohm\'s Law'},{n:'P=VI=I²R', eq:'Power'},{n:'E=hf', eq:'Photon Energy'},
+      {n:'n₁sinθ₁=n₂sinθ₂', eq:'Snell\'s Law'},{n:'T=2π√(l/g)', eq:'Simple Pendulum'},{n:'PV=nRT', eq:'Ideal Gas'}
+    ],
+    Chemistry: [
+      {n:'n=m/M', eq:'Mole Concept'},{n:'PV=nRT', eq:'Ideal Gas Law'},{n:'pH=-log[H⁺]', eq:'pH Scale'},
+      {n:'ΔG=ΔH-TΔS', eq:'Gibbs Energy'},{n:'E=E°-RT/nF·lnQ', eq:'Nernst Eqn'},{n:'λ=h/mv', eq:'de Broglie'},
+      {n:'t₁/₂=0.693/k', eq:'Half-Life'},{n:'Ka×Kb=Kw', eq:'Acid-Base'},{n:'Moles=N/Nₐ', eq:'Avogadro'},
+      {n:'q=mcΔT', eq:'Calorimetry'},{n:'ΔU=q+w', eq:'1st Law Thermo'},{n:'Kp=Kc(RT)^Δn', eq:'Kp vs Kc'}
+    ],
+    Maths: [
+      {n:'sin²x+cos²x=1', eq:'Pythagorean ID'},{n:'∫eˣ dx=eˣ+C', eq:'Integration'},{n:'d/dx(sinx)=cosx', eq:'Derivative'},
+      {n:'x=(-b±√D)/2a', eq:'Quadratic Formula'},{n:'Sₙ=n/2(2a+(n-1)d)', eq:'AP Sum'},{n:'Sₙ=a(rⁿ-1)/(r-1)', eq:'GP Sum'},
+      {n:'log(mn)=logm+logn', eq:'Log Product'},{n:'tan(A+B)=(tanA+tanB)/(1-tanAtanB)', eq:'Tan Addition'},
+      {n:'C(n,r)=n!/(r!(n-r)!)', eq:'Combinations'},{n:'A·B=|A||B|cosθ', eq:'Dot Product'},
+      {n:'Area=½|x₁(y₂-y₃)+...|', eq:'Triangle Area'},{n:'lim(sinx/x)=1 as x→0', eq:'Standard Limit'}
+    ]
   };
+  // Highlight active button
+  ['Physics','Chemistry','Maths'].forEach(s => {
+    const btn = document.getElementById('ff-' + s.substring(0,3).toLowerCase());
+    if (btn) btn.style.background = s === subj ? 'var(--primary)' : 'var(--surface2)';
+  });
   list.innerHTML = (data[subj] || []).map(f => `
-    <div class="card" style="text-align:center;">
-      <div style="font-family:serif; font-size:1.2rem; font-weight:700; color:var(--primary);">${f.n}</div>
-      <div style="font-size:0.7rem; color:var(--text-dim);">${f.eq}</div>
-    </div>
-  `).join('');
+    <div style="background:var(--surface2);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-family:serif;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:6px;">${f.n}</div>
+      <div style="font-size:0.7rem;color:var(--text-dim);">${f.eq}</div>
+    </div>`).join('');
 }
 
 // ── Verification & Stats ──
@@ -492,17 +725,38 @@ function renderSubjects() {
 
 function renderHeatmap() {
   const grid = document.getElementById('heatmapGrid');
+  if (!grid) return;
   const activity = {};
-  App.entries.forEach(e => activity[e.dateStr] = (activity[e.dateStr] || 0) + 1);
+  App.entries.forEach(e => { if(e.dateStr) activity[e.dateStr] = (activity[e.dateStr] || 0) + 1; });
   
-  let html = '';
-  for (let i = 20; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
+  // 26 weeks = 182 days, grouped into weeks of 7
+  const totalDays = 182;
+  const today = new Date();
+  // start from Monday of 26 weeks ago
+  let start = new Date(today);
+  start.setDate(start.getDate() - (totalDays - 1));
+  
+  let weeks = [];
+  let week = [];
+  for (let i = 0; i < totalDays; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
     const ds = toLocalDate(d);
-    const level = activity[ds] ? Math.min(activity[ds], 4) : 0;
-    html += `<div style="width:12px; height:12px; border-radius:2px; background:hsla(var(--p-h), 80%, 60%, ${level * 0.25}); flex-shrink:0;"></div>`;
+    const count = activity[ds] || 0;
+    const level = count === 0 ? 0 : count === 1 ? 1 : count <= 3 ? 2 : count <= 5 ? 3 : 4;
+    week.push({ds, level});
+    if (week.length === 7) { weeks.push(week); week = []; }
   }
-  grid.innerHTML = html;
+  if (week.length) weeks.push(week);
+  
+  grid.innerHTML = weeks.map(wk =>
+    `<div style="display:flex;flex-direction:column;gap:3px;">${wk.map(day =>
+      `<div title="${day.ds}: ${activity[day.ds] || 0} topics" style="width:12px;height:12px;border-radius:2px;flex-shrink:0;background:${
+        day.level === 0 ? 'rgba(255,255,255,0.05)' :
+        day.level === 1 ? 'hsla(var(--p-h),80%,60%,0.25)' :
+        day.level === 2 ? 'hsla(var(--p-h),80%,60%,0.5)' :
+        day.level === 3 ? 'hsla(var(--p-h),80%,60%,0.75)' : 'hsla(var(--p-h),80%,60%,1)'
+      };"></div>`).join('')}
+    </div>`).join('');
 }
 
 // ── Utility Exports ──

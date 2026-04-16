@@ -304,39 +304,103 @@
             
             <!-- Pomodoro -->
             <div class="card card-glass">
-              <h3>Pomodoro Timer</h3>
+              <h3>🍅 Focus Timer</h3>
               <div style="text-align: center; margin: 24px 0;">
-                <h1 id="pomoTime" style="font-size: 3.5rem;">25:00</h1>
+                <h1 id="pomoTime" style="font-size: 3.5rem; font-variant-numeric: tabular-nums;">25:00</h1>
                 <p id="pomoLabel" style="color: var(--text-dim); margin-top: 5px;">Focus Session</p>
               </div>
               <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="btn" id="pomo-25" onclick="setPomoMode(25, 'Focus Session')" style="flex: 1;">25m</button>
-                <button class="btn" id="pomo-50" onclick="setPomoMode(50, 'Deep Work')" style="flex: 1;">50m</button>
-                <button class="btn" id="pomo-5" onclick="setPomoMode(5, 'Short Break')" style="flex: 1;">5m</button>
+                <button class="btn" id="pomo-25" onclick="setPomoMode(25, 'Focus Session')" style="flex: 1; background: var(--surface2);">25m</button>
+                <button class="btn" id="pomo-50" onclick="setPomoMode(50, 'Deep Work')" style="flex: 1; background: var(--surface2);">50m</button>
+                <button class="btn" id="pomo-5" onclick="setPomoMode(5, 'Short Break')" style="flex: 1; background: var(--surface2);">5m</button>
               </div>
               <button class="btn btn-primary" id="pomoStartBtn" onclick="startPomo()">▶ Start Session</button>
+            </div>
+
+            <!-- Questions Attempted -->
+            <div class="card">
+              <h3>✏️ Questions Attempted</h3>
+              <p style="color:var(--text-dim);font-size:0.8rem;margin:8px 0 16px;">Log questions solved today</p>
+              <div class="input-group">
+                <label>Subject</label>
+                <select id="qSubjectSelect" class="input-field">
+                  <option>Physics</option><option>Chemistry</option><option>Maths</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Questions Count</label>
+                <input type="number" id="qAttemptedInput" class="input-field" placeholder="e.g. 40" min="1">
+              </div>
+              <button class="btn btn-primary" onclick="logQuestionsAttempted()">✅ Log Questions</button>
+            </div>
+
+            <!-- Study Time Tracker -->
+            <div class="card">
+              <h3>⏱️ Study Time Tracker</h3>
+              <p style="color:var(--text-dim);font-size:0.8rem;margin:8px 0 16px;">Track hours studied per subject</p>
+              <div class="input-group">
+                <label>Subject</label>
+                <select id="studySubjectSelect" class="input-field">
+                  <option>Physics</option><option>Chemistry</option><option>Maths</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Hours Studied</label>
+                <input type="number" id="studyHoursInput" class="input-field" placeholder="e.g. 2.5" min="0.5" step="0.5">
+              </div>
+              <button class="btn btn-primary" onclick="logStudyTime()">✅ Log Study Time</button>
+              <div id="studyTimeList" style="margin-top: 16px; max-height: 180px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Mock Test Tracker -->
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                <h3>📊 Mock Test Tracker</h3>
+                <button class="btn" onclick="document.getElementById('mockModal').classList.add('active')" style="width:auto;padding:6px 12px;font-size:0.7rem;">+ Add</button>
+              </div>
+              <div id="mockList" style="max-height: 250px; overflow-y: auto;"></div>
             </div>
 
             <!-- Mistakes -->
             <div class="card">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>Mistake Log</h3>
+                <h3>📕 Mistake Log</h3>
                 <button class="btn" onclick="openMistakeForm()" style="width: auto; padding: 6px 12px; font-size: 0.7rem;">+ Add</button>
               </div>
               <div id="mistakeList" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Flashcards -->
+            <div class="card card-glass">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h3>🗂️ Flashcards</h3>
+                <div style="display:flex;gap:6px;">
+                  <button onclick="showFlashcard('Physics')" style="background:var(--surface2);border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Phy</button>
+                  <button onclick="showFlashcard('Chemistry')" style="background:var(--surface2);border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Chem</button>
+                  <button onclick="showFlashcard('Maths')" style="background:var(--surface2);border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Math</button>
+                </div>
+              </div>
+              <div id="flashcardFace" onclick="flipFlashcard()" style="min-height:120px;background:var(--surface2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;cursor:pointer;transition:all 0.2s;border:1px solid var(--border-rich);">
+                <div style="font-size:0.7rem;color:var(--text-dim);">Loading...</div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+                <button onclick="prevFlashcard()" style="background:var(--surface2);border:none;color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">← Prev</button>
+                <span id="flashcardCounter" style="font-size:0.8rem;color:var(--text-dim);">1 / 5</span>
+                <button onclick="nextFlashcard()" style="background:var(--surface2);border:none;color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">Next →</button>
+              </div>
             </div>
             
             <!-- Formula Sheet -->
             <div class="card" style="grid-column: 1 / -1;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>Quick Formulas</h3>
+                <h3>📐 Quick Formulas</h3>
                 <div style="display: flex; gap: 10px;">
-                  <button class="btn" id="ff-phy" onclick="showFormulas('Physics')" style="width: auto; padding: 6px 14px;">Physics</button>
-                  <button class="btn" id="ff-chem" onclick="showFormulas('Chemistry')" style="width: auto; padding: 6px 14px;">Chemistry</button>
-                  <button class="btn" id="ff-math" onclick="showFormulas('Maths')" style="width: auto; padding: 6px 14px;">Maths</button>
+                  <button class="btn" id="ff-phy" onclick="showFormulas('Physics')" style="width: auto; padding: 6px 14px; background: var(--primary);">Physics</button>
+                  <button class="btn" id="ff-che" onclick="showFormulas('Chemistry')" style="width: auto; padding: 6px 14px; background: var(--surface2);">Chemistry</button>
+                  <button class="btn" id="ff-mat" onclick="showFormulas('Maths')" style="width: auto; padding: 6px 14px; background: var(--surface2);">Maths</button>
                 </div>
               </div>
-              <div id="formulaList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;"></div>
+              <div id="formulaList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;"></div>
             </div>
 
           </div>
@@ -373,12 +437,27 @@
 
   <div class="modal-overlay" id="examModal">
     <div class="modal-box">
-      <h3>Set Exam Dates</h3>
+      <h3>📅 Set Exam Dates</h3>
       <div class="input-group"><label>JEE Mains</label><input type="date" id="mainDate" class="input-field"></div>
       <div class="input-group"><label>JEE Advanced</label><input type="date" id="advDate" class="input-field"></div>
       <div style="display: flex; gap: 10px;">
         <button class="btn" onclick="closeExamModal()" style="background: var(--surface2);">Cancel</button>
         <button class="btn btn-primary" onclick="saveExamDates()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="mockModal">
+    <div class="modal-box">
+      <h3>📊 Log Mock Test</h3>
+      <div class="input-group"><label>Test Name</label><input type="text" id="mockName" class="input-field" placeholder="e.g. Allen Mock 5"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+        <div class="input-group"><label>Your Score</label><input type="number" id="mockScore" class="input-field" placeholder="e.g. 210"></div>
+        <div class="input-group"><label>Max Score</label><input type="number" id="mockMaxScore" class="input-field" placeholder="300" value="300"></div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" onclick="document.getElementById('mockModal').classList.remove('active')" style="background: var(--surface2);">Cancel</button>
+        <button class="btn btn-primary" onclick="saveMockTest()">Save Test</button>
       </div>
     </div>
   </div>
