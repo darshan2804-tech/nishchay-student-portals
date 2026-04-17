@@ -94,29 +94,39 @@ function doLogout() {
   window.location.reload();
 }
 
-async function loadBranding() {
-  try {
-    const doc = await _db.collection('site_settings').doc('global').get();
-    if (doc.exists) {
-      const data = doc.data();
-      if (data.logoUrl) {
-        document.getElementById('loginLogo').src = data.logoUrl;
-        document.getElementById('sidebarLogo').src = data.logoUrl;
+function setupGlobalListeners() {
+  // Real-time site settings (logo, etc)
+  _db.collection('site_settings').doc('global')
+    .onSnapshot(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.logoUrl) {
+          const l1 = document.getElementById('loginLogo');
+          const l2 = document.getElementById('sidebarLogo');
+          if (l1) l1.src = data.logoUrl;
+          if (l2) l2.src = data.logoUrl;
+        }
       }
-    }
-  } catch(e) { console.error('Logo load failed', e); }
+    });
+
+  // Real-time exam dates
+  _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates')
+    .onSnapshot(doc => {
+      if (doc.exists) App.examDates = doc.data();
+      renderCountdown();
+    });
 }
 
 _auth.onAuthStateChanged(async user => {
   loadTheme();
-  loadBranding();
   if (!user) return showScreen('authScreen');
   App.user = user;
+  
+  // Load approved status
   const doc = await _db.collection('users').doc(user.uid).get();
   if (doc.exists && doc.data().status === 'approved') {
     initApp();
   } else if (ADMIN_EMAILS.includes(user.email)) {
-    // Auto-approve admin
     await _db.collection('users').doc(user.uid).set({ status: 'approved' }, { merge: true });
     initApp();
   } else {
@@ -133,8 +143,8 @@ async function initApp() {
   document.getElementById('menuName').textContent = name;
   document.getElementById('menuEmail').textContent = App.user.email;
   
+  setupGlobalListeners(); // New robust real-time settings
   setupListeners();
-  loadSettings();
   syncInputTime();
 }
 
@@ -1216,11 +1226,19 @@ function renderHeatmap() {
       if (!day.data) return `<div title="${day.ds}: No activity" class="heatmap-cell" style="background:var(--border);"></div>`;
       const d = day.data;
       const avgMastery = d.masteryCount ? Math.round(d.masterySum / d.masteryCount) : 0;
-      const topic_color = d.topics === 0 ? 'var(--border)' : d.topics === 1 ? 'hsla(var(--p-h),80%,60%,0.25)' : d.topics <= 3 ? 'hsla(var(--p-h),80%,60%,0.5)' : d.topics <= 5 ? 'hsla(var(--p-h),80%,60%,0.75)' : 'hsla(var(--p-h),80%,60%,1)';
-      const h_color = d.hours > 0 ? `; border-color: rgba(20,184,166,${Math.min(d.hours / 4, 1)})` : '';
-      const glow = avgMastery > 70 ? `; box-shadow: 0 0 10px hsla(270,80%,60%,0.4); color: hsla(270,80%,60%,1);` : `color: ${topic_color};`;
+      
+      // Fix: Improved activity color weighting logic
+      let cellColor = 'var(--border)'; // Default empty
+      if (d.topics > 0) {
+        const weight = d.topics === 1 ? 0.3 : d.topics <= 3 ? 0.5 : d.topics <= 5 ? 0.8 : 1;
+        cellColor = `hsla(var(--p-h), 80%, 60%, ${weight})`;
+      }
+      
+      const borderColor = d.hours > 0 ? `border: 1.5px solid rgba(20,184,166,${Math.min(d.hours / 4, 1)})` : 'border: 1px solid transparent';
+      const glowEffect = avgMastery > 70 ? `; box-shadow: 0 0 10px hsla(270,80%,60%,0.5); background-color: #a855f7 !important` : `background-color: ${cellColor}`;
+      
       const tip = `${day.ds} | Topics: ${d.topics} | Hours: ${d.hours.toFixed(1)} | Mastery: ${avgMastery}%`;
-      return `<div title="${tip}" class="heatmap-cell" style="background:${topic_color}${h_color}${glow}"></div>`;
+      return `<div title="${tip}" class="heatmap-cell" style="${borderColor}; ${glowEffect}"></div>`;
     }).join('')}</div>`).join('');
 
   if (legend) {
