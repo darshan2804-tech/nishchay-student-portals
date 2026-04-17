@@ -432,10 +432,10 @@ function renderLog() {
   c.innerHTML = filtered.map(e => `
     <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px;">
       <div>
-        <div style="font-weight:600;">${e.topic}</div>
+        <div style="font-weight:600; color:var(--text);">${e.topic}</div>
         <div style="font-size:0.75rem; color:var(--text-dim);">${new Date(e.dateStr).toLocaleDateString()}</div>
       </div>
-      <button onclick="deleteEntry('${e.id}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer; opacity:0.5;">✕</button>
+      <button onclick="deleteEntry('${e.id}')" class="btn-delete-log">✕</button>
     </div>
   `).join('');
 }
@@ -892,14 +892,14 @@ function renderNativeCalendar() {
   const subjectColor = s => s === 'Physics' ? '#6366f1' : s === 'Chemistry' ? '#f59e0b' : s === 'Maths' ? '#10b981' : '#a855f7';
 
   grid.innerHTML = cells.map(c => {
-    if (!c.cur) return `<div style="min-height:90px;background:rgba(255,255,255,0.01);border-radius:10px;padding:8px;"><span style="font-size:0.75rem;color:rgba(255,255,255,0.15);">${c.day}</span></div>`;
+    if (!c.cur) return `<div style="min-height:90px;background:var(--border);opacity:0.2;border-radius:10px;padding:8px;"><span style="font-size:0.75rem;color:var(--text-dim);">${c.day}</span></div>`;
     const evs = c.evs || [];
-    const dots = evs.slice(0, 3).map(ev => `<div style="display:flex;align-items:center;gap:4px;margin-top:2px;"><div style="width:6px;height:6px;border-radius:50%;background:${subjectColor(ev.subject)};flex-shrink:0;"></div><div style="font-size:0.55rem;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px;">${ev.topic}</div></div>`).join('');
-    const more = evs.length > 3 ? `<div style="font-size:0.5rem;color:var(--text-dim);margin-top:2px;">+${evs.length-3} more</div>` : '';
-    const border = c.isToday ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.05)';
-    const bg = c.isToday ? 'hsla(var(--p-h),var(--p-s),60%,0.08)' : 'rgba(255,255,255,0.02)';
-    return `<div onclick="openCalDay('${c.ds}')" style="min-height:90px;background:${bg};border:${border};border-radius:10px;padding:8px;cursor:pointer;transition:background 0.2s;" onmouseenter="this.style.background='rgba(99,102,241,0.1)'" onmouseleave="this.style.background='${bg}'">
-      <span style="font-size:0.8rem;font-weight:${c.isToday ? 800 : 600};color:${c.isToday ? 'var(--primary)' : '#fff'}">${c.day}</span>
+    const dots = evs.slice(0, 3).map(ev => `<div style="display:flex;align-items:center;gap:4px;margin-top:2px;"><div style="width:6px;height:6px;border-radius:50%;background:${subjectColor(ev.subject)};flex-shrink:0;"></div><div style="font-size:0.55rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px;">${ev.topic}</div></div>`).join('');
+    const more = evs.length > 3 ? `<div style="font-size:0.5rem;color:var(--text-muted);margin-top:2px;">+${evs.length-3} more</div>` : '';
+    const border = c.isToday ? '2px solid var(--primary)' : '1px solid var(--border)';
+    const bg = c.isToday ? 'var(--primary-pale)' : 'var(--surface)';
+    return `<div onclick="openCalDay('${c.ds}')" style="min-height:90px;background:${bg};border:${border};border-radius:10px;padding:8px;cursor:pointer;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--primary)'" onmouseleave="this.style.borderColor='${c.isToday ? 'var(--primary)' : 'var(--border)'}'">
+      <span style="font-size:0.8rem;font-weight:${c.isToday ? 800 : 600};color:${c.isToday ? 'var(--primary)' : 'var(--text)'}">${c.day}</span>
       ${dots}${more}
     </div>`;
   }).join('');

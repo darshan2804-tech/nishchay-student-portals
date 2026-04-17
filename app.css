@@ -391,6 +391,28 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
 .btn-rate-hard { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 .btn-rate-hard:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
 
+/* Log Delete Button */
+.btn-delete-log {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text-dim);
+  opacity: 0.6;
+  transition: all 0.2s var(--smooth);
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-delete-log:hover {
+  color: var(--red);
+  opacity: 1;
+  background: hsla(0, 72%, 51%, 0.1);
+  transform: scale(1.1);
+}
+
 /* ── Mobile Optimization ─────────────────────────────────────── */
 .bottom-nav {
   display: none;
