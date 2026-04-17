@@ -23,7 +23,8 @@ const App = {
   mocks: [],
   examDates: { mains: null, adv: null },
   studyTarget: 6,
-  _unsubs: []
+  _unsubs: [],
+  currentAddSubject: 'Physics'
 };
 
 // ── Helpers ──
@@ -244,6 +245,12 @@ const INTERVALS = [
   { label: 'Day 30', mins: 43200, type: 'long' }
 ];
 
+function selectSubjectChip(subject, el) {
+  App.currentAddSubject = subject;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
 async function addEntry() {
   const topic = document.getElementById('topicInput').value.trim();
   const dateStr = document.getElementById('studyDate').value;
@@ -259,7 +266,14 @@ async function addEntry() {
     datetime: new Date(base.getTime() + iv.mins * 60000).toISOString()
   }));
 
-  App.pendingEntry = { id: Date.now(), topic, dateStr, timeStr, revisions };
+  App.pendingEntry = { 
+    id: Date.now(), 
+    topic, 
+    dateStr, 
+    timeStr, 
+    revisions,
+    subject: App.currentAddSubject 
+  };
   
   showResult(App.pendingEntry);
 }
@@ -267,18 +281,20 @@ async function addEntry() {
 function showResult(entry) {
   const rc = document.getElementById('resultCard');
   const title = document.getElementById('resultTopic');
+  const subj = document.getElementById('resultSubj');
   const list = document.getElementById('intervalsList');
+  
   rc.style.display = 'block';
   title.textContent = entry.topic;
-  list.innerHTML = entry.revisions.map(r => `
-    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.8rem;">
-      <span style="font-weight:600; color:var(--primary);">${r.label}</span>
-      <span style="color:var(--text-muted);">${new Date(r.datetime).toLocaleDateString()} ${new Date(r.datetime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+  subj.textContent = entry.subject;
+  subj.style.color = entry.subject === 'Physics' ? 'var(--primary)' : entry.subject === 'Chemistry' ? 'var(--accent)' : 'var(--green)';
+
+  list.innerHTML = entry.revisions.map((r, i) => `
+    <div class="result-item" style="display:flex; justify-content:space-between; padding:12px 16px; background:rgba(255,255,255,0.02); border-radius:10px; font-size:0.85rem; border:1px solid var(--border); animation-delay: ${i * 0.05}s;">
+      <span style="font-weight:700; color:var(--primary);">${r.label}</span>
+      <span style="color:var(--text-dim);">${new Date(r.datetime).toLocaleDateString(undefined, {month:'short', day:'numeric'})} • ${new Date(r.datetime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
     </div>
   `).join('');
-  
-  const saveBtn = document.getElementById('addToCalIcsBtn');
-  if (saveBtn) saveBtn.textContent = 'Add to my calendar';
   
   rc.scrollIntoView({ behavior: 'smooth' });
 }
@@ -286,15 +302,23 @@ function showResult(entry) {
 async function savePendingEntry() {
   if (!App.pendingEntry) return;
   const btn = document.getElementById('addToCalIcsBtn');
-  btn.disabled = true; btn.textContent = 'Saving...';
+  btn.disabled = true; btn.textContent = 'Saving to Firestore...';
   try {
     await _db.collection('users').doc(App.user.uid).collection('entries').doc(String(App.pendingEntry.id))
       .set({ ...App.pendingEntry, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    showToast('Topic saved to cloud!');
+    
+    showToast('🚀 Topic synced to cloud!');
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('topicInput').value = '';
     App.pendingEntry = null;
-  } catch(e) { showToast(e.message); btn.disabled = false; btn.textContent = 'Save to Cloud Firestore'; }
+    
+    // Switch to Today tab to see the result if applicable
+    setTimeout(() => switchTab('today'), 800);
+  } catch(e) { 
+    showToast(e.message); 
+    btn.disabled = false; 
+    btn.textContent = 'Save to Cloud Firestore'; 
+  }
 }
 
 // ── UI Rendering ──
@@ -946,6 +970,7 @@ window.doLogout = doLogout;
 window.showAuthTab = showAuthTab;
 window.checkApproval = checkApproval;
 window.switchTab = switchTab;
+window.selectSubjectChip = selectSubjectChip;
 window.addEntry = addEntry;
 window.savePendingEntry = savePendingEntry;
 window.toggleTheme = () => { document.body.classList.toggle('dark-mode'); };

@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=6.3">
+  <link rel="stylesheet" href="app.css?v=6.4">
 
   <!-- Firebase Compat -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -283,33 +283,62 @@
         </div>
 
         <!-- PAGE: Add -->
-        <div id="page-add" class="page">
-          <h1>Add Study Topic</h1>
-          <p style="color: var(--text-dim); margin-bottom: 30px;">Log a new subject/topic to start the 7-stage revision cycle.</p>
+        <div id="page-add" class="page animate-entrance">
+          <h1 style="font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 2.2rem; margin-bottom: 8px;">Add Study Topic</h1>
+          <p style="color: var(--text-dim); margin-bottom: 32px; font-size: 0.95rem;">Select a subject and log your topic to start the 7-stage revision cycle.</p>
           
-          <div class="card" style="max-width: 600px;">
-            <div class="input-group">
-              <label>Topic Name</label>
-              <input type="text" id="topicInput" class="input-field" placeholder="e.g. Newton's Laws of Motion">
+          <div class="card card-glass-rich" style="max-width: 640px; border-color: var(--border-rich);">
+            <div style="margin-bottom: 24px;">
+              <label style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">Step 1: Select Subject</label>
+              <div class="subject-chips">
+                <div class="chip chip-phy active" onclick="selectSubjectChip('Physics', this)">
+                  <i>⚛️</i> <span>Physics</span>
+                </div>
+                <div class="chip chip-chem" onclick="selectSubjectChip('Chemistry', this)">
+                  <i>🧪</i> <span>Chemistry</span>
+                </div>
+                <div class="chip chip-mat" onclick="selectSubjectChip('Maths', this)">
+                  <i>📐</i> <span>Maths</span>
+                </div>
+              </div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+
+            <div class="input-group">
+              <label>Step 2: Topic Name</label>
+              <input type="text" id="topicInput" class="input-field" placeholder="e.g. Modern Physics - Photoelectric Effect">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
               <div class="input-group">
                 <label>Date</label>
-                <input type="date" id="studyDate" class="input-field">
+                <div style="position: relative;">
+                  <input type="date" id="studyDate" class="input-field" style="padding-left: 44px;">
+                  <span style="position: absolute; left: 14px; top: 12px; opacity: 0.5;">📅</span>
+                </div>
               </div>
               <div class="input-group">
                 <label>Time</label>
-                <input type="time" id="studyTime" class="input-field">
+                <div style="position: relative;">
+                  <input type="time" id="studyTime" class="input-field" style="padding-left: 44px;">
+                  <span style="position: absolute; left: 14px; top: 12px; opacity: 0.5;">⏱️</span>
+                </div>
               </div>
             </div>
-            <button class="btn btn-primary" onclick="addEntry()">Generate Revision Cycle</button>
+
+            <button class="btn btn-primary btn-bloom" onclick="addEntry()" style="margin-top: 10px; height: 52px; font-weight: 700; font-size: 1rem;">Generate Revision Cycle</button>
           </div>
 
-          <div id="resultCard" style="display: none; margin-top: 24px; max-width: 600px;">
-            <div class="card" style="border-color: var(--green); background: rgba(16, 185, 129, 0.05);">
-              <h3 id="resultTopic" style="margin-bottom: 15px;">Topic Name</h3>
-              <div id="intervalsList"></div>
-              <button class="btn btn-primary" id="addToCalIcsBtn" onclick="window.savePendingEntry()" style="margin-top: 20px; background: var(--green);">Save to Cloud Firestore</button>
+          <div id="resultCard" style="display: none; margin-top: 32px; max-width: 640px;">
+            <div class="card" style="border-left: 4px solid var(--green); background: rgba(16, 185, 129, 0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div>
+                  <h3 id="resultTopic" style="font-size: 1.2rem; font-weight: 800;">Topic Name</h3>
+                  <div style="font-size: 0.7rem; color: var(--green); font-weight: 700; text-transform: uppercase;" id="resultSubj">PHYSICS</div>
+                </div>
+                <div style="background: var(--green); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800;">PREVIEW</div>
+              </div>
+              <div id="intervalsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+              <button class="btn btn-primary" id="addToCalIcsBtn" onclick="window.savePendingEntry()" style="margin-top: 24px; background: var(--green); height: 50px;">Save to Cloud Firestore</button>
             </div>
           </div>
         </div>
@@ -495,6 +524,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=6.3"></script>
+  <script src="app.js?v=6.4"></script>
 </body>
 </html>
