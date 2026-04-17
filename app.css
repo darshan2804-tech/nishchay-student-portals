@@ -497,8 +497,58 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
 /* Subject Modal Scrollbar */
 #subjectTopicList::-webkit-scrollbar { width: 5px; }
 #subjectTopicList::-webkit-scrollbar-track { background: transparent; }
-#subjectTopicList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-#subjectTopicList::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+/* Heatmap Glassmorphism Styles */
+#heatmapGrid {
+  display: flex !important;
+  gap: 4px !important;
+  padding: 10px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#heatmapGrid::-webkit-scrollbar { display: none; }
+
+.heatmap-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px; /* More modern than 2px */
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+.heatmap-cell:hover {
+  transform: scale(1.4);
+  z-index: 10;
+  box-shadow: 0 0 15px currentColor;
+}
+
+.heatmap-month {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.heatmap-legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
 
 /* Pomodoro Immersive Full Screen */
 #pomoFullscreen {

@@ -1073,25 +1073,24 @@ function showSubjectDetail(subject) {
 
 function renderHeatmap() {
   const grid = document.getElementById('heatmapGrid');
+  const monthContainer = document.getElementById('heatmapMonths');
+  const legend = document.getElementById('heatmapLegend');
   if (!grid) return;
 
-  // Tri-layer: topics, hours, mastery per day
-  const activity = {}; // { ds: { topics: N, hours: H, masterySum: M, masteryCount: N } }
+  const activity = {}; 
   App.entries.forEach(e => {
     if (!e.dateStr) return;
     if (!activity[e.dateStr]) activity[e.dateStr] = { topics: 0, hours: 0, masterySum: 0, masteryCount: 0 };
     activity[e.dateStr].topics++;
-    // mastery for this entry
-    const doneCount = (e.revisions || []).filter(r => {
+    const revisions = e.revisions || [];
+    const doneCount = revisions.filter(r => {
       const key = `${e.id}_${r.label}`;
       return Object.values(App.dailyData).some(day => day.done && day.done[key]);
     }).length;
-    const total = (e.revisions || []).length || 1;
-    const pct = Math.round((doneCount / total) * 100);
+    const pct = Math.round((doneCount / (revisions.length || 1)) * 100);
     activity[e.dateStr].masterySum += pct;
     activity[e.dateStr].masteryCount++;
   });
-  // Layer in study hours
   Object.values(App.studyTime).forEach(st => {
     if (!st.date) return;
     if (!activity[st.date]) activity[st.date] = { topics: 0, hours: 0, masterySum: 0, masteryCount: 0 };
@@ -1104,27 +1103,51 @@ function renderHeatmap() {
   start.setDate(start.getDate() - (totalDays - 1));
 
   let weeks = [], week = [];
+  let monthLabels = [];
+  let currentMonth = -1;
+
   for (let i = 0; i < totalDays; i++) {
     const d = new Date(start); d.setDate(start.getDate() + i);
     const ds = toLocalDate(d);
-    const data = activity[ds];
-    week.push({ ds, data });
-    if (week.length === 7) { weeks.push(week); week = []; }
+    
+    if (d.getMonth() !== currentMonth) {
+      if (week.length === 0 || week.length === 1) { // Only add label at start of column
+        monthLabels.push(d.toLocaleDateString('en-IN', { month: 'short' }));
+        currentMonth = d.getMonth();
+      }
+    }
+
+    week.push({ ds, data: activity[ds] });
+    if (week.length === 7) { 
+      weeks.push(week); 
+      week = []; 
+    }
   }
   if (week.length) weeks.push(week);
 
+  if (monthContainer) {
+    monthContainer.innerHTML = monthLabels.map(m => `<span class="heatmap-month">${m}</span>`).join('');
+  }
+
   grid.innerHTML = weeks.map(wk =>
     `<div style="display:flex;flex-direction:column;gap:3px;">${wk.map(day => {
-      if (!day.data) return `<div title="${day.ds}: No activity" style="width:12px;height:12px;border-radius:2px;flex-shrink:0;background:var(--border);"></div>`;
+      if (!day.data) return `<div title="${day.ds}: No activity" class="heatmap-cell" style="background:var(--border);"></div>`;
       const d = day.data;
       const avgMastery = d.masteryCount ? Math.round(d.masterySum / d.masteryCount) : 0;
-      // Blend color from topics (blue) → hours (teal) → mastery (purple)
-      const topic_color = d.topics === 0 ? 'var(--border)' : d.topics === 1 ? 'hsla(222,85%,65%,0.25)' : d.topics <= 3 ? 'hsla(222,85%,65%,0.5)' : d.topics <= 5 ? 'hsla(222,85%,65%,0.75)' : 'hsla(222,85%,65%,1)';
-      const h_color = d.hours > 0 ? `; outline: 1px solid rgba(20,184,166,${Math.min(d.hours / 4, 1) * 0.8})` : '';
-      const glow = avgMastery > 70 ? '; box-shadow: 0 0 4px rgba(168,85,247,0.6)' : '';
-      const tip = `${day.ds}\nTopics: ${d.topics} | Hours: ${d.hours.toFixed(1)} | Avg Mastery: ${avgMastery}%`;
-      return `<div title="${tip}" style="width:12px;height:12px;border-radius:2px;flex-shrink:0;background:${topic_color}${h_color}${glow};"></div>`;
+      const topic_color = d.topics === 0 ? 'var(--border)' : d.topics === 1 ? 'hsla(var(--p-h),80%,60%,0.25)' : d.topics <= 3 ? 'hsla(var(--p-h),80%,60%,0.5)' : d.topics <= 5 ? 'hsla(var(--p-h),80%,60%,0.75)' : 'hsla(var(--p-h),80%,60%,1)';
+      const h_color = d.hours > 0 ? `; border-color: rgba(20,184,166,${Math.min(d.hours / 4, 1)})` : '';
+      const glow = avgMastery > 70 ? `; box-shadow: 0 0 10px hsla(270,80%,60%,0.4); color: hsla(270,80%,60%,1);` : `color: ${topic_color};`;
+      const tip = `${day.ds} | Topics: ${d.topics} | Hours: ${d.hours.toFixed(1)} | Mastery: ${avgMastery}%`;
+      return `<div title="${tip}" class="heatmap-cell" style="background:${topic_color}${h_color}${glow}"></div>`;
     }).join('')}</div>`).join('');
+
+  if (legend) {
+    legend.innerHTML = `
+      <div class="legend-item"><div class="legend-dot" style="background:hsla(var(--p-h),80%,60%,0.7)"></div> Topics Studied</div>
+      <div class="legend-item"><div class="legend-dot" style="border:2px solid var(--teal)"></div> Study Hours Logged</div>
+      <div class="legend-item"><div class="legend-dot" style="box-shadow:0 0 8px #a855f7; background:#a855f7;"></div> High Mastery (>70%)</div>
+    `;
+  }
 }
 
 // ── Native Calendar ──

@@ -232,12 +232,16 @@
           </div>
 
           <!-- Heatmap -->
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-              <h3>Activity Heatmap</h3>
-              <p id="heatmapSub" style="font-size: 0.75rem; color: var(--text-dim);">Last 6 months</p>
+          <div class="card card-glass-rich">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <div>
+                <h3 style="margin:0;">Activity Insights</h3>
+                <p style="font-size: 0.75rem; color: var(--text-dim); margin-top:4px;">Multi-layer activity & mastery tracking</p>
+              </div>
+              <div id="heatmapMonths" style="display:flex; gap:20px;"></div>
             </div>
-            <div id="heatmapGrid" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 10px;"></div>
+            <div id="heatmapGrid"></div>
+            <div id="heatmapLegend" class="heatmap-legend"></div>
           </div>
         </div>
 
