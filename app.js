@@ -153,18 +153,20 @@ function setupListeners() {
       refreshActivePage();
       updateTodayBadge();
       computeStreak();
+      renderPerformanceScore(); // Update score when entries change
     });
   App._unsubs.push(unsub);
 
-  // Today's progress
-  const ts = todayStr();
-  const unsubToday = _db.collection('users').doc(App.user.uid).collection('daily').doc(ts)
+  // Historical Progress Listener (fetches all completion days for accuracy)
+  const unsubDaily = _db.collection('users').doc(App.user.uid).collection('daily')
     .onSnapshot(snap => {
-      const raw = snap.exists ? snap.data() : {};
-      App.dailyData[ts] = { done: {}, ratings: {}, ...raw };
+      snap.forEach(doc => {
+        App.dailyData[doc.id] = doc.data();
+      });
+      renderPerformanceScore(); // Live update dashboard score
       if (document.getElementById('page-today').classList.contains('active')) renderToday();
     });
-  App._unsubs.push(unsubToday);
+  App._unsubs.push(unsubDaily);
 
   // Load mistakes
   _db.collection('users').doc(App.user.uid).collection('data').doc('mistakes')
@@ -784,27 +786,33 @@ async function saveExamDates() {
 }
 
 function renderPerformanceScore() {
-  const today = new Date(); today.setHours(0,0,0,0);
+  const now = new Date();
   let totalDue = 0, doneCount = 0;
   
-  // Actually, calculation is better based on entries
   const allDoneKeys = new Set();
-  Object.values(App.dailyData).forEach(day => Object.keys(day.done || {}).forEach(k => allDoneKeys.add(k)));
+  Object.values(App.dailyData).forEach(day => {
+    if (day.done) Object.keys(day.done).forEach(k => allDoneKeys.add(k));
+  });
 
   App.entries.forEach(e => {
     e.revisions.forEach(r => {
-      if (new Date(r.datetime) <= today) {
+      if (new Date(r.datetime) <= now) {
         totalDue++;
         if (allDoneKeys.has(`${e.id}_${r.label}`)) doneCount++;
       }
     });
   });
 
-  const score = totalDue ? Math.round((doneCount/totalDue)*100) : 0;
-  document.getElementById('perfScore').innerHTML = `${score}<span>%</span>`;
-  document.getElementById('perfBar').style.width = `${score}%`;
-  document.getElementById('perfDone').textContent = doneCount;
-  document.getElementById('perfPending').textContent = totalDue - doneCount;
+  const score = totalDue ? Math.round((doneCount / totalDue) * 100) : 0;
+  const scoreEl = document.getElementById('perfScore');
+  const barEl = document.getElementById('perfBar');
+  const doneEl = document.getElementById('perfDone');
+  const pendingEl = document.getElementById('perfPending');
+
+  if (scoreEl) scoreEl.innerHTML = `${score}<span>%</span>`;
+  if (barEl) barEl.style.width = `${score}%`;
+  if (doneEl) doneEl.textContent = doneCount;
+  if (pendingEl) pendingEl.textContent = Math.max(0, totalDue - doneCount);
 }
 
 function renderSubjects() {
