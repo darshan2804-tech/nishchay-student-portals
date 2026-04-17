@@ -675,6 +675,169 @@ function initTools() {
   renderStudyTime();
   showFormulas('Physics');
   showFlashcard('Physics');
+  initFormulaAudioDB();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PHASE 4 — Audio Formula Recording (IndexedDB + MediaRecorder)
+// ═══════════════════════════════════════════════════════════════
+let formulaAudioDB = null;
+let currentRecordingKey = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
+function initFormulaAudioDB() {
+  const req = indexedDB.open('formulaAudio', 1);
+  req.onupgradeneeded = e => {
+    e.target.result.createObjectStore('recordings', { keyPath: 'key' });
+  };
+  req.onsuccess = e => { formulaAudioDB = e.target.result; };
+}
+
+function selectFormulaForRecording(key, label) {
+  currentRecordingKey = key;
+  document.getElementById('selectedFormulaLabel').textContent = label;
+  document.getElementById('audioRecorderPanel').style.display = 'block';
+  // Check if recording exists
+  checkFormulaAudioExists(key);
+}
+
+function checkFormulaAudioExists(key) {
+  if (!formulaAudioDB) return;
+  const tx = formulaAudioDB.transaction('recordings', 'readonly');
+  const store = tx.objectStore('recordings');
+  const req = store.get(key);
+  req.onsuccess = e => {
+    const exists = !!e.target.result;
+    document.getElementById('playAudioBtn').disabled = !exists;
+    document.getElementById('deleteAudioBtn').disabled = !exists;
+  };
+}
+
+async function toggleRecording() {
+  if (isRecording) {
+    // Stop recording
+    mediaRecorder.stop();
+  } else {
+    // Start recording
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        saveFormulaAudio(blob);
+        stream.getTracks().forEach(t => t.stop());
+        document.getElementById('recordBtn').textContent = '🔴 Start Recording';
+        document.getElementById('recordingWave').style.display = 'none';
+        isRecording = false;
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      document.getElementById('recordBtn').textContent = '⏹ Stop Recording';
+      document.getElementById('recordingWave').style.display = 'block';
+    } catch (e) {
+      showToast('Microphone access denied.');
+    }
+  }
+}
+
+function saveFormulaAudio(blob) {
+  if (!formulaAudioDB || !currentRecordingKey) return;
+  const tx = formulaAudioDB.transaction('recordings', 'readwrite');
+  tx.objectStore('recordings').put({ key: currentRecordingKey, blob });
+  tx.oncomplete = () => {
+    showToast('✅ Audio saved!');
+    document.getElementById('playAudioBtn').disabled = false;
+    document.getElementById('deleteAudioBtn').disabled = false;
+  };
+}
+
+function playFormulaAudio() {
+  if (!formulaAudioDB || !currentRecordingKey) return;
+  const tx = formulaAudioDB.transaction('recordings', 'readonly');
+  const req = tx.objectStore('recordings').get(currentRecordingKey);
+  req.onsuccess = e => {
+    if (!e.target.result) return showToast('No recording found.');
+    const url = URL.createObjectURL(e.target.result.blob);
+    const audio = new Audio(url);
+    audio.onended = () => URL.revokeObjectURL(url);
+    audio.play();
+    document.getElementById('playAudioBtn').textContent = '⏸ Playing...';
+    audio.onended = () => { document.getElementById('playAudioBtn').textContent = '▶ Play'; URL.revokeObjectURL(url); };
+  };
+}
+
+function deleteFormulaAudio() {
+  if (!formulaAudioDB || !currentRecordingKey) return;
+  if (!confirm('Delete this recording?')) return;
+  const tx = formulaAudioDB.transaction('recordings', 'readwrite');
+  tx.objectStore('recordings').delete(currentRecordingKey);
+  tx.oncomplete = () => {
+    showToast('Recording deleted.');
+    document.getElementById('playAudioBtn').disabled = true;
+    document.getElementById('deleteAudioBtn').disabled = true;
+  };
+}
+
+function startListenMode() {
+  const panel = document.getElementById('audioRecorderPanel');
+  if (panel.style.display === 'none' || !panel.style.display) {
+    panel.style.display = 'block';
+    if (!currentRecordingKey) {
+      showToast('👆 Click any formula below to select it for recording.');
+    }
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PHASE 5 — Travel Mode (One-Handed Swipe Flashcards)
+// ═══════════════════════════════════════════════════════════════
+let travelTouchStartY = 0;
+
+function openTravelMode() {
+  const overlay = document.getElementById('travelModeOverlay');
+  overlay.classList.add('active');
+  renderTravelCard();
+  
+  // Attach swipe handlers
+  const card = document.getElementById('travelCard');
+  card.addEventListener('touchstart', e => { travelTouchStartY = e.touches[0].clientY; }, { passive: true });
+  card.addEventListener('touchend', e => {
+    const dy = travelTouchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 50) {
+      if (dy > 0) { nextFlashcard(); } else { prevFlashcard(); }
+      renderTravelCard();
+    }
+  }, { passive: true });
+}
+
+function closeTravelMode() {
+  document.getElementById('travelModeOverlay').classList.remove('active');
+}
+
+function renderTravelCard() {
+  const cards = FLASHCARDS[flashcardSubj];
+  if (!cards || !cards.length) return;
+  const card = cards[flashcardIdx];
+  const container = document.getElementById('travelCardContent');
+  const counter = document.getElementById('travelCounter');
+  if (!container || !card) return;
+
+  if (flashcardFlipped) {
+    container.innerHTML = `
+      <div style="font-size:clamp(2rem,6vw,4rem); font-weight:800; color:var(--primary); font-family:serif; line-height:1.2;">${card.a}</div>
+      <div style="font-size:0.85rem; color:var(--text-muted); margin-top:16px; letter-spacing:0.05em;">ANSWER</div>`;
+  } else {
+    container.innerHTML = `
+      <div style="font-size:clamp(1.2rem,4vw,2rem); font-weight:700; color:var(--text); line-height:1.4;">${card.q}</div>
+      <div style="font-size:0.85rem; color:var(--text-muted); margin-top:20px;">Tap to reveal answer</div>`;
+  }
+  if (counter) counter.textContent = `${flashcardIdx + 1} / ${cards.length}`;
 }
 
 // ── Mistakes & Tools ──
@@ -749,11 +912,15 @@ function showFormulas(subj) {
     const btn = document.getElementById('ff-' + s.substring(0,3).toLowerCase());
     if (btn) btn.style.background = s === subj ? 'var(--primary)' : 'var(--surface2)';
   });
-  list.innerHTML = (data[subj] || []).map(f => `
-    <div style="background:var(--surface2);border-radius:12px;padding:16px;text-align:center;">
+  list.innerHTML = (data[subj] || []).map((f, i) => {
+    const key = `${subj}_${i}`;
+    return `
+    <div onclick="selectFormulaForRecording('${key}', '${f.n} — ${f.eq.replace(/'/g, '')}')" style="background:var(--surface2);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;border:1px solid transparent;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'" title="Click to record audio for this formula">
       <div style="font-family:serif;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:6px;">${f.n}</div>
       <div style="font-size:0.7rem;color:var(--text-dim);">${f.eq}</div>
-    </div>`).join('');
+      <div style="font-size:0.55rem;color:var(--text-muted);margin-top:6px;opacity:0.6;">🎙️ tap to record</div>
+    </div>`;
+  }).join('');
 }
 
 // ── Verification & Stats ──
@@ -907,37 +1074,57 @@ function showSubjectDetail(subject) {
 function renderHeatmap() {
   const grid = document.getElementById('heatmapGrid');
   if (!grid) return;
-  const activity = {};
-  App.entries.forEach(e => { if(e.dateStr) activity[e.dateStr] = (activity[e.dateStr] || 0) + 1; });
-  
-  // 26 weeks = 182 days, grouped into weeks of 7
+
+  // Tri-layer: topics, hours, mastery per day
+  const activity = {}; // { ds: { topics: N, hours: H, masterySum: M, masteryCount: N } }
+  App.entries.forEach(e => {
+    if (!e.dateStr) return;
+    if (!activity[e.dateStr]) activity[e.dateStr] = { topics: 0, hours: 0, masterySum: 0, masteryCount: 0 };
+    activity[e.dateStr].topics++;
+    // mastery for this entry
+    const doneCount = (e.revisions || []).filter(r => {
+      const key = `${e.id}_${r.label}`;
+      return Object.values(App.dailyData).some(day => day.done && day.done[key]);
+    }).length;
+    const total = (e.revisions || []).length || 1;
+    const pct = Math.round((doneCount / total) * 100);
+    activity[e.dateStr].masterySum += pct;
+    activity[e.dateStr].masteryCount++;
+  });
+  // Layer in study hours
+  Object.values(App.studyTime).forEach(st => {
+    if (!st.date) return;
+    if (!activity[st.date]) activity[st.date] = { topics: 0, hours: 0, masterySum: 0, masteryCount: 0 };
+    activity[st.date].hours += (st.hours || 0);
+  });
+
   const totalDays = 182;
   const today = new Date();
-  // start from Monday of 26 weeks ago
   let start = new Date(today);
   start.setDate(start.getDate() - (totalDays - 1));
-  
-  let weeks = [];
-  let week = [];
+
+  let weeks = [], week = [];
   for (let i = 0; i < totalDays; i++) {
     const d = new Date(start); d.setDate(start.getDate() + i);
     const ds = toLocalDate(d);
-    const count = activity[ds] || 0;
-    const level = count === 0 ? 0 : count === 1 ? 1 : count <= 3 ? 2 : count <= 5 ? 3 : 4;
-    week.push({ds, level});
+    const data = activity[ds];
+    week.push({ ds, data });
     if (week.length === 7) { weeks.push(week); week = []; }
   }
   if (week.length) weeks.push(week);
-  
+
   grid.innerHTML = weeks.map(wk =>
-    `<div style="display:flex;flex-direction:column;gap:3px;">${wk.map(day =>
-      `<div title="${day.ds}: ${activity[day.ds] || 0} topics" style="width:12px;height:12px;border-radius:2px;flex-shrink:0;background:${
-        day.level === 0 ? 'var(--border)' :
-        day.level === 1 ? 'hsla(var(--p-h),80%,60%,0.25)' :
-        day.level === 2 ? 'hsla(var(--p-h),80%,60%,0.5)' :
-        day.level === 3 ? 'hsla(var(--p-h),80%,60%,0.75)' : 'hsla(var(--p-h),80%,60%,1)'
-      };"></div>`).join('')}
-    </div>`).join('');
+    `<div style="display:flex;flex-direction:column;gap:3px;">${wk.map(day => {
+      if (!day.data) return `<div title="${day.ds}: No activity" style="width:12px;height:12px;border-radius:2px;flex-shrink:0;background:var(--border);"></div>`;
+      const d = day.data;
+      const avgMastery = d.masteryCount ? Math.round(d.masterySum / d.masteryCount) : 0;
+      // Blend color from topics (blue) → hours (teal) → mastery (purple)
+      const topic_color = d.topics === 0 ? 'var(--border)' : d.topics === 1 ? 'hsla(222,85%,65%,0.25)' : d.topics <= 3 ? 'hsla(222,85%,65%,0.5)' : d.topics <= 5 ? 'hsla(222,85%,65%,0.75)' : 'hsla(222,85%,65%,1)';
+      const h_color = d.hours > 0 ? `; outline: 1px solid rgba(20,184,166,${Math.min(d.hours / 4, 1) * 0.8})` : '';
+      const glow = avgMastery > 70 ? '; box-shadow: 0 0 4px rgba(168,85,247,0.6)' : '';
+      const tip = `${day.ds}\nTopics: ${d.topics} | Hours: ${d.hours.toFixed(1)} | Avg Mastery: ${avgMastery}%`;
+      return `<div title="${tip}" style="width:12px;height:12px;border-radius:2px;flex-shrink:0;background:${topic_color}${h_color}${glow};"></div>`;
+    }).join('')}</div>`).join('');
 }
 
 // ── Native Calendar ──
@@ -1120,3 +1307,12 @@ window.calPrevMonth = calPrevMonth;
 window.calNextMonth = calNextMonth;
 window.calToday = calToday;
 window.openCalDay = openCalDay;
+// v8.0 exports
+window.startListenMode = startListenMode;
+window.toggleRecording = toggleRecording;
+window.playFormulaAudio = playFormulaAudio;
+window.deleteFormulaAudio = deleteFormulaAudio;
+window.openTravelMode = openTravelMode;
+window.closeTravelMode = closeTravelMode;
+window.renderTravelCard = renderTravelCard;
+window.selectFormulaForRecording = selectFormulaForRecording;

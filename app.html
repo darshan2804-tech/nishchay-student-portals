@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=7.5">
+  <link rel="stylesheet" href="app.css?v=8.0">
 
   <!-- Firebase Compat -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -468,11 +468,28 @@
             <div class="card" style="grid-column: 1 / -1;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>📐 Quick Formulas</h3>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                   <button class="btn" id="ff-phy" onclick="showFormulas('Physics')" style="width: auto; padding: 6px 14px; background: var(--primary);">Physics</button>
                   <button class="btn" id="ff-che" onclick="showFormulas('Chemistry')" style="width: auto; padding: 6px 14px; background: var(--surface2);">Chemistry</button>
                   <button class="btn" id="ff-mat" onclick="showFormulas('Maths')" style="width: auto; padding: 6px 14px; background: var(--surface2);">Maths</button>
+                  <button class="btn" id="listenModeBtn" onclick="startListenMode()" style="width: auto; padding: 6px 14px; background: #a855f7; color:#fff;">🎧 Listen</button>
+                  <button class="btn" id="travelModeBtn" onclick="openTravelMode()" style="width: auto; padding: 6px 14px; background: var(--teal); color:#fff;">🚌 Travel</button>
                 </div>
+              </div>
+              <!-- Audio Recording Section -->
+              <div id="audioRecorderPanel" style="background:var(--surface2); border-radius:16px; padding:16px; margin-bottom:16px; border:1px solid var(--border); display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <div style="font-weight:700; font-size:0.9rem;">🎙️ Record Formula Audio</div>
+                  <button onclick="document.getElementById('audioRecorderPanel').style.display='none'" style="background:none;border:none;color:var(--text-dim);font-size:1rem;cursor:pointer;">✕</button>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:12px;">Select a formula below, then record your explanation. Stored offline forever.</div>
+                <div id="selectedFormulaLabel" style="background:var(--surface); border-radius:10px; padding:10px 14px; font-family:serif; font-size:1rem; color:var(--primary); font-weight:700; margin-bottom:12px; min-height:40px;">No formula selected</div>
+                <div style="display:flex; gap:10px;">
+                  <button id="recordBtn" onclick="toggleRecording()" class="btn btn-primary" style="flex:1; border-radius:50px;">🔴 Start Recording</button>
+                  <button id="playAudioBtn" onclick="playFormulaAudio()" class="btn" style="flex:1; background:var(--surface2); border-radius:50px;" disabled>▶ Play</button>
+                  <button id="deleteAudioBtn" onclick="deleteFormulaAudio()" class="btn" style="flex:1; background:rgba(239,68,68,0.1); color:var(--red); border-radius:50px;" disabled>🗑️</button>
+                </div>
+                <div id="recordingWave" style="text-align:center; color:var(--red); margin-top:8px; font-size:0.8rem; display:none;">● Recording...</div>
               </div>
               <div id="formulaList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;"></div>
             </div>
@@ -561,6 +578,33 @@
     </div>
   </div>
 
-  <script src="app.js?v=7.5"></script>
+  <!-- Travel Mode Overlay (One-Handed Swipe Flashcards) -->
+  <div id="travelModeOverlay" class="modal-overlay" style="background:#050816; z-index:4000;">
+    <div style="display:flex; flex-direction:column; width:100%; height:100%; padding:20px; overflow:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-shrink:0; margin-bottom:16px;">
+        <div>
+          <div style="font-size:0.7rem; letter-spacing:0.2em; color:var(--text-muted); text-transform:uppercase;">🚌 Travel Mode</div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button onclick="showFlashcard('Physics');renderTravelCard()" id="tlm-phy" style="background:var(--primary-pale); color:var(--primary); border:none; padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:700; cursor:pointer;">Phy</button>
+            <button onclick="showFlashcard('Chemistry');renderTravelCard()" id="tlm-che" style="background:rgba(245,158,11,0.1); color:var(--accent); border:none; padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:700; cursor:pointer;">Chem</button>
+            <button onclick="showFlashcard('Maths');renderTravelCard()" id="tlm-mat" style="background:rgba(16,185,129,0.1); color:var(--green); border:none; padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:700; cursor:pointer;">Math</button>
+          </div>
+        </div>
+        <button onclick="closeTravelMode()" style="background:rgba(255,255,255,0.08); border:none; color:#fff; width:40px; height:40px; border-radius:50%; font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+      </div>
+      <!-- Big swipeable card -->
+      <div id="travelCard" onclick="flipFlashcard();renderTravelCard()" style="flex:1; background:linear-gradient(135deg, var(--surface), var(--surface2)); border:1px solid var(--border-rich); border-radius:28px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; cursor:pointer; position:relative; touch-action:pan-y; overflow:hidden; user-select:none;">
+        <div id="travelCardContent" style="text-align:center;"></div>
+        <div style="position:absolute; bottom:20px; font-size:0.65rem; color:var(--text-muted);">Tap to flip • Swipe up/down to navigate</div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-shrink:0;">
+        <button onclick="prevFlashcard();renderTravelCard()" style="background:var(--surface2); border:none; color:#fff; padding:14px 28px; border-radius:20px; font-size:1rem; cursor:pointer;">← Prev</button>
+        <span id="travelCounter" style="font-size:0.85rem; color:var(--text-dim);">1 / 5</span>
+        <button onclick="nextFlashcard();renderTravelCard()" style="background:var(--surface2); border:none; color:#fff; padding:14px 28px; border-radius:20px; font-size:1rem; cursor:pointer;">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=8.0"></script>
 </body>
 </html>
