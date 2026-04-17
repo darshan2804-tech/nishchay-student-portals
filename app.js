@@ -110,6 +110,7 @@ async function loadBranding() {
 }
 
 _auth.onAuthStateChanged(async user => {
+  loadTheme();
   loadBranding();
   if (!user) return showScreen('authScreen');
   App.user = user;
@@ -195,6 +196,24 @@ async function loadSettings() {
 }
 
 // ── UI Interactivity ──
+function loadTheme() {
+  const saved = localStorage.getItem('theme') || 'dark-mode';
+  document.body.classList.remove('light-mode', 'dark-mode');
+  document.body.classList.add(saved);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = saved === 'dark-mode' ? '🌙' : '☀️';
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.contains('dark-mode');
+  const next = isDark ? 'light-mode' : 'dark-mode';
+  document.body.classList.remove('light-mode', 'dark-mode');
+  document.body.classList.add(next);
+  localStorage.setItem('theme', next);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = next === 'dark-mode' ? '🌙' : '☀️';
+}
+
 function switchTab(name) {
   document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
   document.querySelectorAll('.nav-link, .bottom-nav a').forEach(el => el.classList.remove('active'));
@@ -973,7 +992,7 @@ window.switchTab = switchTab;
 window.selectSubjectChip = selectSubjectChip;
 window.addEntry = addEntry;
 window.savePendingEntry = savePendingEntry;
-window.toggleTheme = () => { document.body.classList.toggle('dark-mode'); };
+window.toggleTheme = toggleTheme;
 window.openExamModal = openExamModal;
 window.closeExamModal = closeExamModal;
 window.saveExamDates = saveExamDates;

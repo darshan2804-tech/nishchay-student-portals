@@ -1,43 +1,67 @@
-/* ═══════════════════════════════════════════════════════════════
-   app.css — Modern SaaS Design System v5.0
-   Unified HSL Framework | Glassmorphism | Rail Layout
-   ═══════════════════════════════════════════════════════════════ */
-
 :root {
-  /* Core Palette (HSL for dynamic alpha/blending) */
-  --p-h: 230; --p-s: 85%;
+  /* Core brand HSL tokens */
+  --p-h: 222; --p-s: 85%; --p-l: 60%;
   --primary: hsl(var(--p-h), var(--p-s), 65%);
+  --primary-dim: hsl(var(--p-h), var(--p-s), 55%);
   --primary-pale: hsla(var(--p-h), var(--p-s), 65%, 0.15);
+  
   --accent: #f59e0b;
   --green: #10b981;
   --teal: #14b8a6;
   --red: #ef4444;
-  --surface: #050816;
-  --surface2: #0f172a;
-  --border: rgba(255,255,255,0.06);
-  --border-rich: rgba(255,255,255,0.12);
-  --text-dim: #94a3b8;
-  --text-muted: #64748b;
-  --glass: rgba(15, 23, 42, 0.6);
-  --glass-rich: rgba(15, 23, 42, 0.8);
   
-  /* System */
+  /* System Spacing & Shape */
   --radius-lg: 24px;
   --radius-md: 16px;
   --radius-sm: 10px;
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.3);
-  --smooth:    cubic-bezier(0.4, 0, 0.2, 1);
   --sidebar-w: 260px;
   --sidebar-collapsed: 80px;
+  --smooth: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── THEMES ────────────────────────────────────────────── */
+
+/* Ensure body starts dark if no class is set */
+body {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode {
+  --bg: #050816;
+  --surface: #0f172a;
+  --surface2: #1e293b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-rich: rgba(255, 255, 255, 0.15);
+  --text: #f8fafc;
+  --text-dim: #94a3b8;
+  --text-muted: #64748b;
+  --glass: rgba(15, 23, 42, 0.6);
+  --glass-rich: rgba(15, 23, 42, 0.85);
+  --shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.light-mode {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-rich: rgba(0, 0, 0, 0.12);
+  --text: #0f172a;
+  --text-dim: #475569;
+  --text-muted: #64748b;
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-rich: rgba(255, 255, 255, 0.9);
+  --shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  color-scheme: light;
 }
 
 /* ── Reset & Base ────────────────────────────────────────────── */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; transition: background 0.3s ease, color 0.3s ease; }
 
 /* ── Typography ──────────────────────────────────────────────── */
-h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #fff; line-height: 1.2; }
-.text-gradient { background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: var(--text); line-height: 1.2; }
+.text-gradient { background: linear-gradient(135deg, var(--text) 0%, var(--text-muted) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
 /* ── Layout Framework ────────────────────────────────────────── */
 .screen { display: none; height: 100vh; width: 100%; overflow: hidden; position: relative; }
@@ -53,7 +77,7 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #f
   padding: 32px 16px;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s var(--smooth);
+  transition: width 0.3s var(--smooth), background 0.3s ease;
   flex-shrink: 0;
   z-index: 100;
 }
@@ -242,14 +266,14 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #f
   gap: 14px;
   padding: 14px 18px;
   border-radius: var(--radius-md);
-  color: var(--text-muted);
+  color: var(--text-dim);
   text-decoration: none;
   font-weight: 600;
   transition: all 0.25s var(--smooth);
   margin-bottom: 4px;
 }
-.nav-link:hover { background: rgba(255, 255, 255, 0.04); color: #fff; transform: translateX(4px); }
-.nav-link.active { background: hsla(var(--p-h), var(--p-s), 60%, 0.1); color: var(--primary); border: 1px solid hsla(var(--p-h), var(--p-s), 60%, 0.15); }
+.nav-link:hover { background: var(--surface2); color: var(--text); transform: translateX(4px); }
+.nav-link.active { background: var(--primary-pale); color: var(--primary); border: 1px solid hsla(var(--p-h), var(--p-s), 60%, 0.15); }
 .sidebar.collapsed .nav-text { display: none; }
 
 /* Cards */
@@ -259,26 +283,28 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #f
   border-radius: var(--radius-md);
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  transition: all 0.3s var(--smooth);
 }
-.card-glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); }
+.card-glass { background: var(--glass); backdrop-filter: blur(15px); }
+.card-glass-rich { background: var(--glass-rich); backdrop-filter: blur(20px); }
 
 /* Inputs */
 .input-group { margin-bottom: 20px; }
 .input-group label { display: block; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: 600; }
 .input-field {
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 14px 16px;
-  color: #fff;
+  color: var(--text);
   font-family: inherit;
   font-size: 0.95rem;
   outline: none;
   transition: all 0.2s;
 }
-.input-field:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.05); }
+.input-field:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px var(--primary-pale); }
 
 /* Buttons */
 .btn {
