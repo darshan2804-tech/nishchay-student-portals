@@ -141,9 +141,15 @@ async function initApp() {
 function setupListeners() {
   // Real-time entries
   const unsub = _db.collection('users').doc(App.user.uid).collection('entries')
-    .orderBy('createdAt', 'desc')
     .onSnapshot(snap => {
-      App.entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Restore previous data by removing server-side sort (filters out docs missing the field)
+      // and sorting locally instead.
+      App.entries = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const tA = a.createdAt?.seconds || a.timestamp?.seconds || 0;
+          const tB = b.createdAt?.seconds || b.timestamp?.seconds || 0;
+          return tB - tA;
+        });
       refreshActivePage();
       updateTodayBadge();
       computeStreak();
@@ -309,7 +315,7 @@ function showResult(entry) {
   
   rc.style.display = 'block';
   title.textContent = entry.topic;
-  const subjects = Array.isArray(entry.subject) ? entry.subject : [entry.subject];
+  const subjects = Array.isArray(entry.subject) ? entry.subject : (entry.subject ? [entry.subject] : ['General']);
   subj.textContent = subjects.join(', ') || 'General';
   subj.style.color = subjects.length === 1 ? (subjects[0] === 'Physics' ? 'var(--primary)' : subjects[0] === 'Chemistry' ? 'var(--accent)' : 'var(--green)') : 'var(--primary)';
 
@@ -330,6 +336,10 @@ async function savePendingEntry() {
   try {
     await _db.collection('users').doc(App.user.uid).collection('entries').doc(String(App.pendingEntry.id))
       .set({ ...App.pendingEntry, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    
+    // Reset button state for next use
+    btn.disabled = false;
+    btn.textContent = 'Save to Cloud Firestore';
     
     showToast('🚀 Topic synced to cloud!');
     document.getElementById('resultCard').style.display = 'none';
@@ -800,7 +810,10 @@ function renderPerformanceScore() {
 function renderSubjects() {
   const counts = { Physics: 0, Chemistry: 0, Maths: 0 };
   App.entries.forEach(e => {
-    const subjects = Array.isArray(e.subject) ? e.subject : [e.subject];
+    let subjects = e.subject;
+    if (!subjects) subjects = ['General'];
+    else if (!Array.isArray(subjects)) subjects = [subjects];
+    
     subjects.forEach(s => {
       if (counts[s] !== undefined) counts[s]++;
     });
