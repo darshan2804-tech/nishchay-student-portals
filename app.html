@@ -170,7 +170,7 @@
         
         <!-- PAGE: Dashboard -->
         <div id="page-dash" class="page active animate-entrance">
-          <div class="flex-row" style="justify-content: space-between; margin-bottom: 36px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+          <div class="header-responsive" style="margin-bottom: 36px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
             <div>
               <h1 id="welcomeTitle" class="text-gradient" style="font-size: 2.8rem; margin-bottom: 8px;">Daily Overview</h1>
               <p style="color: var(--text-dim); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
@@ -228,7 +228,7 @@
           <!-- Subjects Distribution -->
           <div class="card">
             <h3 style="margin-bottom: 20px;">Subject Mastery</h3>
-            <div id="subjRow" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <div id="subjRow" class="grid-responsive">
               <!-- Dynamic -->
             </div>
           </div>
@@ -249,7 +249,7 @@
 
         <!-- PAGE: Today -->
         <div id="page-today" class="page">
-          <div class="flex-row" style="justify-content: space-between; margin-bottom: 24px;">
+          <div class="header-responsive" style="margin-bottom: 24px;">
             <h1>Today's Revisions</h1>
             <button class="btn" onclick="bulkNotifyToday()" style="width: auto; padding: 8px 16px; font-size:0.75rem; background: var(--surface2); border:1px solid var(--border);">🔔 Notify All</button>
           </div>
