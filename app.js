@@ -679,13 +679,46 @@ function renderCountdown() {
   const today = new Date(); today.setHours(0,0,0,0);
   const calc = (dateStr, elId) => {
     const el = document.getElementById(elId);
-    if (!el || !dateStr) return;
+    if (!el) return;
+    if (!dateStr) { el.textContent = '--'; return; }
     const diff = Math.ceil((new Date(dateStr) - today) / 86400000);
     el.textContent = diff > 0 ? diff : 'Done';
   };
-  calc(App.examDates.mains, 'mainDays');
-  calc(App.examDates.adv, 'advDays');
-  if (App.examDates.mains) document.getElementById('mainDateDisp').textContent = `Mains: ${new Date(App.examDates.mains).toLocaleDateString()}`;
+  const dates = App.examDates || {};
+  calc(dates.mains, 'mainDays');
+  calc(dates.adv, 'advDays');
+  if (dates.mains) {
+    const el = document.getElementById('mainDateDisp');
+    if (el) {
+      el.textContent = `Mains: ${new Date(dates.mains).toLocaleDateString()}`;
+      el.style.display = 'block';
+    }
+  }
+}
+
+function openExamModal() {
+  // Pre-populate existing dates
+  const dates = App.examDates || {};
+  if (dates.mains) document.getElementById('mainDate').value = dates.mains;
+  if (dates.adv) document.getElementById('advDate').value = dates.adv;
+  document.getElementById('examModal').classList.add('active');
+}
+
+function closeExamModal() {
+  document.getElementById('examModal').classList.remove('active');
+}
+
+async function saveExamDates() {
+  const mains = document.getElementById('mainDate').value;
+  const adv = document.getElementById('advDate').value;
+  if (!mains && !adv) return showToast('Please set at least one date.');
+  
+  if (!App.user) return;
+  await _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv });
+  App.examDates = { mains, adv };
+  closeExamModal();
+  renderCountdown();
+  showToast('📅 Exam dates saved!');
 }
 
 function renderPerformanceScore() {
@@ -916,23 +949,9 @@ window.switchTab = switchTab;
 window.addEntry = addEntry;
 window.savePendingEntry = savePendingEntry;
 window.toggleTheme = () => { document.body.classList.toggle('dark-mode'); };
-window.openExamModal = () => {
-  // Pre-populate existing dates
-  if (App.examDates && App.examDates.mains) document.getElementById('mainDate').value = App.examDates.mains;
-  if (App.examDates && App.examDates.adv) document.getElementById('advDate').value = App.examDates.adv;
-  document.getElementById('examModal').classList.add('active');
-};
-window.closeExamModal = () => document.getElementById('examModal').classList.remove('active');
-window.saveExamDates = async () => {
-  const mains = document.getElementById('mainDate').value;
-  const adv = document.getElementById('advDate').value;
-  if (!mains && !adv) return showToast('Please set at least one date.');
-  await _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv });
-  App.examDates = { mains, adv };
-  window.closeExamModal();
-  renderCountdown();
-  showToast('📅 Exam dates saved!');
-};
+window.openExamModal = openExamModal;
+window.closeExamModal = closeExamModal;
+window.saveExamDates = saveExamDates;
 window.deleteEntry = deleteEntry;
 window.rateRevision = rateRevision;
 window.saveMistake = saveMistake;
