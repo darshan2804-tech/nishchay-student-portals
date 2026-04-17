@@ -97,7 +97,7 @@ function doLogout() {
 
 async function loadBranding() {
   try {
-    const doc = await _db.collection('settings').doc('branding').get();
+    const doc = await _db.collection('site_settings').doc('global').get();
     if (doc.exists) {
       const data = doc.data();
       if (data.logoUrl) {
@@ -309,22 +309,36 @@ function renderToday() {
   }
 
   c.innerHTML = `
-    <div class="card">
+    <div class="card" style="border: none; background: transparent; padding: 0;">
       ${items.map(item => {
         const isDone = daily.done[item.key];
         const rating = daily.ratings[item.key] || '';
         return `
-          <div style="display:flex; align-items:center; gap:12px; padding:15px 0; border-bottom:1px solid var(--border); ${isDone ? 'opacity:0.5' : ''}">
-            <div style="flex:1;">
-              <div style="font-weight:600; font-size:0.9rem;">${item.topic}</div>
-              <div style="font-size:0.7rem; color:var(--text-dim);">${item.label}</div>
+          <div class="revision-item" style="display:flex; align-items:center; gap:16px; padding:18px 20px; background:var(--surface); border:1px solid var(--border); border-radius:18px; margin-bottom:12px; transition: all 0.3s var(--smooth); ${isDone ? 'opacity:0.6; border-color:transparent; background:rgba(255,255,255,0.02);' : ''}">
+            <div style="width:40px; height:40px; border-radius:12px; background:${isDone ? 'rgba(255,255,255,0.05)' : 'hsla(var(--p-h),var(--p-s),60%,0.1)'}; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">
+              ${isDone ? '✅' : '⏳'}
             </div>
-            ${!isDone ? `
-              <div style="display:flex; gap:8px;">
-                <button onclick="rateRevision('${item.key}', 'easy')" style="background:rgba(16,185,129,0.1); color:var(--green); border:none; padding:6px 12px; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer;">Easy</button>
-                <button onclick="rateRevision('${item.key}', 'hard')" style="background:rgba(239,68,68,0.1); color:var(--red); border:none; padding:6px 12px; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer;">Hard</button>
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:1rem; color:${isDone ? 'var(--text-muted)' : '#fff'};">${item.topic}</div>
+              <div style="font-size:0.75rem; color:var(--text-dim); display:flex; align-items:center; gap:6px;">
+                 <span style="display:inline-block; width:4px; height:4px; border-radius:50%; background:currentColor;"></span>
+                 ${item.label}
               </div>
-            ` : `<span style="color:var(--green); font-size:0.8rem; font-weight:700;">✓ Done</span>`}
+            </div>
+            <div class="revision-actions" style="display:flex; gap:10px;">
+              ${!isDone ? `
+                <button onclick="rateRevision(this, '${item.key}', 'easy')" class="btn-rate btn-rate-easy">
+                  <span>🍃</span> Easy
+                </button>
+                <button onclick="rateRevision(this, '${item.key}', 'hard')" class="btn-rate btn-rate-hard">
+                  <span>🔥</span> Hard
+                </button>
+              ` : `
+                <div style="display:flex; align-items:center; gap:8px; padding:6px 14px; border-radius:10px; background:${rating === 'easy' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; color:${rating === 'easy' ? 'var(--green)' : 'var(--red)'}; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">
+                  ${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}
+                </div>
+              `}
+            </div>
           </div>
         `;
       }).join('')}
@@ -332,27 +346,42 @@ function renderToday() {
   `;
 }
 
-function getTodayItems() {
+function getTodayItems(pendingOnly = false) {
   const ts = todayStr();
+  const daily = App.dailyData[ts] || { done: {} };
   const items = [];
   App.entries.forEach(e => {
     e.revisions.forEach(r => {
       if (toLocalDate(new Date(r.datetime)) === ts) {
-        items.push({ topic: e.topic, label: r.label, key: `${e.id}_${r.label}`, id: e.id });
+        const key = `${e.id}_${r.label}`;
+        if (!pendingOnly || !daily.done[key]) {
+          items.push({ topic: e.topic, label: r.label, key, id: e.id });
+        }
       }
     });
   });
   return items;
 }
 
-async function rateRevision(key, rating) {
+async function rateRevision(btn, key, rating) {
   const ts = todayStr();
+  const row = btn.closest('.revision-item');
+  if (row) {
+    row.style.transform = 'scale(0.98)';
+    row.style.opacity = '0.5';
+  }
+  
   const ref = _db.collection('users').doc(App.user.uid).collection('daily').doc(ts);
-  await ref.set({
-    done: { [key]: true },
-    ratings: { [key]: rating }
-  }, { merge: true });
-  showToast(`Marked as ${rating}!`);
+  try {
+    await ref.set({
+      done: { [key]: true },
+      ratings: { [key]: rating }
+    }, { merge: true });
+    showToast(`Good job! Marked as ${rating}.`);
+  } catch (e) {
+    showToast('Failed to save. Try again.');
+    if (row) { row.style.transform = ''; row.style.opacity = '1'; }
+  }
 }
 
 function renderLog() {
@@ -865,15 +894,20 @@ function updateTodayBadge() {
 }
 
 async function bulkNotifyToday() {
-  const items = getTodayItems();
-  if (!items.length) return showToast('No revisions today!');
-  showToast(`📬 ${items.length} revisions due today!`);
+  const items = getTodayItems(true); // ONLY PENDING
+  if (!items.length) return showToast('All revisions for today are completed! 🎉');
+  
+  showToast(`📬 Sending ${items.length} pending notifications...`);
   if (Notification.permission === 'granted') {
-    items.forEach(item => {
-      new Notification('Study Tracker: Revision Due', {
-        body: `${item.topic} — ${item.label}`,
-        icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968313.png'
-      });
+    items.forEach((item, idx) => {
+      // Stagger notifications slightly to avoid overwhelming the OS
+      setTimeout(() => {
+        new Notification('Revision Due: ' + item.topic, {
+          body: `Time for your ${item.label} revision.`,
+          icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968313.png',
+          tag: item.key
+        });
+      }, idx * 100);
     });
   } else if (Notification.permission !== 'denied') {
     Notification.requestPermission().then(p => { if (p === 'granted') bulkNotifyToday(); });
