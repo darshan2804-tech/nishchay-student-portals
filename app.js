@@ -834,7 +834,7 @@ function renderHeatmap() {
   grid.innerHTML = weeks.map(wk =>
     `<div style="display:flex;flex-direction:column;gap:3px;">${wk.map(day =>
       `<div title="${day.ds}: ${activity[day.ds] || 0} topics" style="width:12px;height:12px;border-radius:2px;flex-shrink:0;background:${
-        day.level === 0 ? 'rgba(255,255,255,0.05)' :
+        day.level === 0 ? 'var(--border)' :
         day.level === 1 ? 'hsla(var(--p-h),80%,60%,0.25)' :
         day.level === 2 ? 'hsla(var(--p-h),80%,60%,0.5)' :
         day.level === 3 ? 'hsla(var(--p-h),80%,60%,0.75)' : 'hsla(var(--p-h),80%,60%,1)'
