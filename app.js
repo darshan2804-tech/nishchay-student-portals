@@ -828,11 +828,55 @@ function renderSubjects() {
   });
   const row = document.getElementById('subjRow');
   row.innerHTML = Object.entries(counts).map(([name, count]) => `
-    <div style="background:var(--surface2); padding:15px; border-radius:12px; text-align:center;">
+    <div onclick="showSubjectDetail('${name}')" style="background:var(--surface2); padding:15px; border-radius:12px; text-align:center; cursor:pointer; transition:all 0.2s var(--smooth); border:1px solid var(--border);" onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
       <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase;">${name}</div>
       <div style="font-size:1.4rem; font-weight:700;">${count}</div>
     </div>
   `).join('');
+}
+
+function showSubjectDetail(subject) {
+  const modal = document.getElementById('subjectModal');
+  const title = document.getElementById('modalSubjectTitle');
+  const list = document.getElementById('subjectTopicList');
+  if (!modal || !list) return;
+
+  title.textContent = `${subject} Mastery`;
+  const filtered = App.entries.filter(e => {
+    const subjects = Array.isArray(e.subject) ? e.subject : [e.subject];
+    return subjects.includes(subject);
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = `<p style="text-align:center; color:var(--text-dim); padding:40px;">No ${subject} topics logged yet.</p>`;
+  } else {
+    list.innerHTML = filtered.map(e => {
+      const doneCount = e.revisions.filter(r => {
+        const key = `${e.id}_${r.label}`;
+        return Object.values(App.dailyData).some(day => day.done && day.done[key]);
+      }).length;
+      const pct = Math.round((doneCount / e.revisions.length) * 100);
+      
+      return `
+        <div style="background:var(--surface2); border-radius:12px; padding:16px; margin-bottom:12px; border:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-weight:700; color:var(--text);">${e.topic}</div>
+              <div style="font-size:0.75rem; color:var(--text-dim); margin-top:4px;">${new Date(e.dateStr).toLocaleDateString()}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:1rem; font-weight:800; color:var(--primary);">${pct}%</div>
+              <div style="font-size:0.65rem; color:var(--text-muted);">Mastery</div>
+            </div>
+          </div>
+          <div style="height:4px; background:var(--border); border-radius:2px; margin-top:12px; overflow:hidden;">
+            <div style="width:${pct}%; height:100%; background:var(--primary); transition:width 0.4s var(--smooth);"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  modal.classList.add('active');
 }
 
 function renderHeatmap() {

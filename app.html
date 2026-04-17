@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=7.2">
+  <link rel="stylesheet" href="app.css?v=7.3">
 
   <!-- Firebase Compat -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -532,6 +532,19 @@
     </div>
   </div>
 
-  <script src="app.js?v=7.2"></script>
+  <!-- Subject Detail Modal -->
+  <div id="subjectModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 600px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 id="modalSubjectTitle" style="margin:0; font-family:'Poppins';">Subject Topics</h2>
+        <button onclick="document.getElementById('subjectModal').classList.remove('active')" class="btn-delete-log" style="opacity:1;">✕</button>
+      </div>
+      <div id="subjectTopicList" style="max-height:400px; overflow-y:auto; padding-right:10px;">
+        <p style="text-align:center; color:var(--text-dim);">No topics found for this subject.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=7.3"></script>
 </body>
 </html>

@@ -487,7 +487,14 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
   color: var(--primary);
 }
 
-/* ── Modals ── */
+/* Subject Modal Scrollbar */
+#subjectTopicList::-webkit-scrollbar { width: 5px; }
+#subjectTopicList::-webkit-scrollbar-track { background: transparent; }
+#subjectTopicList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+#subjectTopicList::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Animation delay utility */
+.revision-item:nth-child(n) { animation-delay: calc(var(--i) * 0.05s); }
 .modal-overlay {
   display: none;
   position: fixed;
