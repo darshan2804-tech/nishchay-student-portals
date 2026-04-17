@@ -399,12 +399,12 @@ function downloadICS() {
 
   icsLines.push("END:VCALENDAR");
 
-  const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+  const icsContent = icsLines.join("\r\n");
+  const dataUri = "data:text/calendar;charset=utf-8," + encodeURIComponent(icsContent);
   
-  // Method 1: Standard Link Download (Reliable)
+  // Method 1: Standard Link Download
   const link = document.createElement("a");
-  link.href = url;
+  link.href = dataUri;
   link.download = `${entry.topic.replace(/\s+/g, "_")}_Revision_Plan.ics`;
   document.body.appendChild(link);
   link.click();
@@ -412,8 +412,8 @@ function downloadICS() {
   
   // Method 2: Attempt immediate open (Smoothness)
   setTimeout(() => {
-    window.location.assign(url);
-    showToast("📅 File downloaded! If it didn't open, please click the downloaded file.");
+    window.location.href = dataUri;
+    showToast("📅 Exported! If it didn't open automatically, please click the downloaded file.");
   }, 500);
 }
 
