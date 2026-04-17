@@ -860,8 +860,8 @@ function showSubjectDetail(subject) {
       return `
         <div style="background:var(--surface2); border-radius:12px; padding:16px; margin-bottom:12px; border:1px solid var(--border);">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-              <div style="font-weight:700; color:var(--text);">${e.topic}</div>
+            <div style="min-width:0; flex:1;">
+              <div class="topic-title-safe" style="font-weight:700; color:var(--text);">${e.topic}</div>
               <div style="font-size:0.75rem; color:var(--text-dim); margin-top:4px;">${new Date(e.dateStr).toLocaleDateString()}</div>
             </div>
             <div style="text-align:right;">
@@ -967,7 +967,7 @@ function renderNativeCalendar() {
   grid.innerHTML = cells.map(c => {
     if (!c.cur) return `<div style="min-height:90px;background:var(--border);opacity:0.2;border-radius:10px;padding:8px;"><span style="font-size:0.75rem;color:var(--text-dim);">${c.day}</span></div>`;
     const evs = c.evs || [];
-    const dots = evs.slice(0, 3).map(ev => `<div style="display:flex;align-items:center;gap:4px;margin-top:2px;"><div style="width:6px;height:6px;border-radius:50%;background:${subjectColor(ev.subject)};flex-shrink:0;"></div><div style="font-size:0.55rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px;">${ev.topic}</div></div>`).join('');
+    const dots = evs.slice(0, 3).map(ev => `<div style="display:flex;align-items:center;gap:4px;margin-top:2px;"><div style="width:6px;height:6px;border-radius:50%;background:${subjectColor(ev.subject)};flex-shrink:0;"></div><div class="topic-title-safe" style="font-size:0.55rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px;">${ev.topic}</div></div>`).join('');
     const more = evs.length > 3 ? `<div style="font-size:0.5rem;color:var(--text-muted);margin-top:2px;">+${evs.length-3} more</div>` : '';
     const border = c.isToday ? '2px solid var(--primary)' : '1px solid var(--border)';
     const bg = c.isToday ? 'var(--primary-pale)' : 'var(--surface)';
@@ -1005,8 +1005,8 @@ function openCalDay(ds) {
   list.innerHTML = entries_.map(e => `
     <div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);">
       <div style="width:4px;min-height:40px;border-radius:4px;background:${subjectColor(e.subject)};flex-shrink:0;"></div>
-      <div style="flex:1;">
-        <div style="font-weight:700;font-size:0.95rem;">${e.topic}</div>
+      <div style="flex:1; min-width:0;">
+        <div class="topic-title-safe" style="font-weight:700;font-size:0.95rem;">${e.topic}</div>
         <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px;">${e.times.map(t => `${t.label} • ${t.time}`).join(' | ')}</div>
       </div>
       <button onclick="deleteEntry('${e.id}')" style="background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer;">🗑️</button>

@@ -464,6 +464,13 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
   .auth-card { padding: 30px 24px; }
 }
 
+/* Topic Titles Overflow Fix */
+#resultTopic, .topic-title-safe {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
 /* ── Animations ──────────────────────────────────────────────── */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
