@@ -455,18 +455,18 @@
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                 <h3>🗂️ Flashcards</h3>
                 <div style="display:flex;gap:6px;">
-                  <button onclick="showFlashcard('Physics')" style="background:var(--surface2);border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Phy</button>
-                  <button onclick="showFlashcard('Chemistry')" style="background:var(--surface2);border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Chem</button>
-                  <button onclick="showFlashcard('Maths')" style="background:var(--surface2);border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Math</button>
+                  <button onclick="showFlashcard('Physics')" style="background:var(--surface2);border:none;color:var(--text);padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Phy</button>
+                  <button onclick="showFlashcard('Chemistry')" style="background:var(--surface2);border:none;color:var(--text);padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Chem</button>
+                  <button onclick="showFlashcard('Maths')" style="background:var(--surface2);border:none;color:var(--text);padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Math</button>
                 </div>
               </div>
-              <div id="flashcardFace" onclick="flipFlashcard()" style="min-height:120px;background:var(--surface2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;cursor:pointer;transition:all 0.2s;border:1px solid var(--border-rich);">
+              <div id="flashcardFace" onclick="flipFlashcard()" style="min-height:120px;background:var(--surface2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;cursor:pointer;transition:all 0.2s;border:1px solid var(--border-rich);color:var(--text);">
                 <div style="font-size:0.7rem;color:var(--text-dim);">Loading...</div>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
-                <button onclick="prevFlashcard()" style="background:var(--surface2);border:none;color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">← Prev</button>
+                <button onclick="prevFlashcard()" style="background:var(--surface2);border:none;color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;">← Prev</button>
                 <span id="flashcardCounter" style="font-size:0.8rem;color:var(--text-dim);">1 / 5</span>
-                <button onclick="nextFlashcard()" style="background:var(--surface2);border:none;color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">Next →</button>
+                <button onclick="nextFlashcard()" style="background:var(--surface2);border:none;color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;">Next →</button>
               </div>
             </div>
             

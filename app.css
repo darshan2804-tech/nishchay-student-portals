@@ -219,7 +219,7 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
   flex-shrink: 0;
 }
 
-.f-text h3 { font-size: 1.1rem; color: #fff; margin-bottom: 4px; }
+.f-text h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 4px; }
 .f-text p { font-size: 0.9rem; color: var(--text-dim); }
 
 .info-footer {
@@ -269,7 +269,7 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
 }
 
 .auth-actions a span { color: var(--primary); font-weight: 700; }
-.auth-actions a:hover { color: #fff; }
+.auth-actions a:hover { color: var(--text); }
 
 /* Responsive Splitting */
 @media (max-width: 1024px) {
@@ -483,7 +483,7 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
 }
 .revision-done .rev-icon { background: rgba(255,255,255,0.04); }
 .rev-body { flex: 1; min-width: 0; }
-.rev-topic { font-weight: 700; font-size: 0.95rem; color: #fff; }
+.rev-topic { font-weight: 700; font-size: 0.95rem; color: var(--text); }
 .revision-done .rev-topic { color: var(--text-muted); }
 .rev-label { font-size: 0.72rem; color: var(--text-dim); display: flex; align-items: center; gap: 5px; margin-top: 3px; }
 .rev-dot { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }

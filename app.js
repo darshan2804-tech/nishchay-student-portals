@@ -646,7 +646,7 @@ function renderFlashcard() {
   if (!fc || !card) return;
   fc.innerHTML = flashcardFlipped
     ? `<div style="font-size:1.8rem;font-weight:800;color:var(--primary);font-family:serif;">${card.a}</div><div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">Answer</div>`
-    : `<div style="font-size:1rem;font-weight:600;color:#fff;">${card.q}</div><div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">Tap to reveal</div>`;
+    : `<div style="font-size:1rem;font-weight:600;color:var(--text);">${card.q}</div><div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">Tap to reveal</div>`;
   if (counter) counter.textContent = `${flashcardIdx + 1} / ${cards.length}`;
 }
 
