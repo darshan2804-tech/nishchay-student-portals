@@ -169,57 +169,59 @@
       <main class="content-area">
         
         <!-- PAGE: Dashboard -->
-        <div id="page-dash" class="page active">
-          <div class="flex-row" style="justify-content: space-between; margin-bottom: 32px;">
+        <div id="page-dash" class="page active animate-entrance">
+          <div class="flex-row" style="justify-content: space-between; margin-bottom: 36px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
             <div>
-              <h1 id="welcomeTitle">Daily Overview</h1>
-              <p style="color: var(--text-dim); font-size: 0.85rem;" id="clockDate">...</p>
+              <h1 id="welcomeTitle" class="text-gradient" style="font-size: 2.8rem; margin-bottom: 8px;">Daily Overview</h1>
+              <p style="color: var(--text-dim); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                <span id="clockDate" style="font-weight:600;">...</span>
+              </p>
             </div>
-            <div style="text-align: right;">
-              <h1 id="clockTime" style="font-size: 1.8rem;">00:00</h1>
-              <button id="themeBtn" onclick="toggleTheme()" style="background: var(--surface2); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; cursor: pointer;">🌙</button>
+            <div style="text-align: right; display:flex; flex-direction:column; align-items:flex-end;">
+              <h1 id="clockTime" style="font-size: 2.2rem; font-family:'Inter', sans-serif; font-weight:800; letter-spacing:-1px;">00:00</h1>
+              <button id="themeBtn" onclick="toggleTheme()" style="background: var(--surface2); border: 1px solid var(--border-rich); border-radius: 50%; width: 44px; height: 44px; cursor: pointer; margin-top:8px; transition:all 0.3s var(--smooth); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">🌙</button>
             </div>
           </div>
 
           <!-- Stats Grid -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 36px;">
             <!-- Score Card -->
-            <div class="card card-glass" id="perfCard">
+            <div class="card card-glass-rich card-primary-glow" id="perfCard">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="font-size: 0.9rem; color: var(--text-muted);">Efficiency Score</h3>
-                <span class="badge" style="background: var(--primary-pale); color: var(--primary);">Live</span>
+                <h3 style="font-size: 0.95rem; color: var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Efficiency Score</h3>
+                <span class="badge live-badge" style="background: var(--primary-pale); color: var(--primary);">Live</span>
               </div>
-              <div style="display:flex; align-items:baseline; gap:8px;">
-                <h1 style="font-size: 3rem;" id="perfScore">0<span>%</span></h1>
-                <p id="perfLabel" style="font-size: 0.85rem; color: var(--green);">Ready to study</p>
+              <div style="display:flex; align-items:baseline; gap:12px;">
+                <h1 style="font-size: 3.5rem; font-weight:800; text-shadow:0 0 40px hsla(var(--p-h),80%,60%,0.3);" id="perfScore">0<span style="font-size:1.5rem; opacity:0.6;">%</span></h1>
+                <p id="perfLabel" style="font-size: 0.9rem; font-weight:600; color: var(--green);">Ready to study</p>
               </div>
-              <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 15px 0;">
-                <div id="perfBar" style="height: 100%; background: var(--primary); border-radius: 10px; width: 0%;"></div>
+              <div style="height: 6px; background: rgba(255,255,255,0.06); border-radius: 10px; margin: 18px 0; overflow:hidden;">
+                <div id="perfBar" style="height: 100%; background: linear-gradient(90deg, var(--primary), #818cf8); border-radius: 10px; width: 0%; box-shadow:0 0 10px var(--primary);"></div>
               </div>
-              <div style="display: flex; gap: 20px; font-size: 0.75rem; color: var(--text-dim);">
-                <div>Done: <strong id="perfDone" style="color: #fff;">0</strong></div>
-                <div>Pending: <strong id="perfPending" style="color: #fff;">0</strong></div>
-                <div>Streak: <strong id="perfStreak" style="color: var(--accent);">0</strong></div>
+              <div style="display: flex; gap: 16px; font-size: 0.75rem; color: var(--text-dim); background:var(--surface2); padding:10px 14px; border-radius:12px;">
+                <div style="flex:1;">Done: <strong id="perfDone" style="color: #fff; font-size:0.9rem;">0</strong></div>
+                <div style="flex:1;">Pending: <strong id="perfPending" style="color: #fff; font-size:0.9rem;">0</strong></div>
+                <div style="flex:1;">Streak: <strong id="perfStreak" style="color: var(--accent); font-size:0.9rem; text-shadow:0 0 10px rgba(245,158,11,0.4);">0</strong></div>
               </div>
             </div>
 
             <!-- Exam Countdown -->
-            <div class="card card-glass">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Exam Countdown</h3>
-                <button class="btn" onclick="openExamModal()" style="width: auto; padding: 6px 12px; font-size: 0.7rem; background: var(--primary-pale); color: var(--primary); border: 1px solid var(--primary);">⚙️ Set Dates</button>
+            <div class="card card-glass" style="display:flex; flex-direction:column; justify-content:center;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px;">
+                <h3 style="font-size: 1.1rem;">Exam Countdown</h3>
+                <button class="btn" onclick="openExamModal()" style="width: auto; padding: 6px 14px; font-size: 0.75rem; background: var(--surface2); color: var(--text); border: 1px solid var(--border-rich);">⚙️ Dates</button>
               </div>
-              <div style="display: flex; gap: 15px; margin-top: 15px;">
-                <div style="flex: 1;">
-                  <div style="font-size: 0.6rem; color: var(--text-dim);">JEE MAINS</div>
-                  <div id="mainDays" style="font-size: 1.8rem; font-weight: 800; color: var(--teal);">--</div>
+              <div style="display: flex; gap: 20px;">
+                <div style="flex: 1; background:var(--surface2); padding:16px; border-radius:14px; border:1px solid var(--border); text-align:center;">
+                  <div style="font-size: 0.65rem; color: var(--teal); font-weight:700; letter-spacing:0.05em; margin-bottom:4px;">JEE MAINS</div>
+                  <div id="mainDays" style="font-size: 2.2rem; font-weight: 800; color: #fff; text-shadow:0 0 20px rgba(20,184,166,0.5);">--</div>
                 </div>
-                <div style="flex: 1;">
-                  <div style="font-size: 0.6rem; color: var(--text-dim);">JEE ADVANCED</div>
-                  <div id="advDays" style="font-size: 1.8rem; font-weight: 800; color: var(--accent);">--</div>
+                <div style="flex: 1; background:var(--surface2); padding:16px; border-radius:14px; border:1px solid var(--border); text-align:center;">
+                  <div style="font-size: 0.65rem; color: var(--accent); font-weight:700; letter-spacing:0.05em; margin-bottom:4px;">JEE ADVANCED</div>
+                  <div id="advDays" style="font-size: 2.2rem; font-weight: 800; color: #fff; text-shadow:0 0 20px rgba(245,158,11,0.5);">--</div>
                 </div>
               </div>
-              <p id="mainDateDisp" style="font-size: 0.65rem; color: var(--text-dim); margin-top: 10px; display: none;"></p>
+              <p id="mainDateDisp" style="font-size: 0.7rem; color: var(--text-dim); margin-top: 16px; text-align:center; display: none;"></p>
             </div>
           </div>
 
