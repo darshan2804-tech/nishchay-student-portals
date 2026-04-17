@@ -359,6 +359,59 @@ async function savePendingEntry() {
   }
 }
 
+function downloadICS() {
+  const entry = App.pendingEntry;
+  if (!entry) return;
+
+  const formatDate = (date) => {
+    const d = new Date(date);
+    return d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  };
+
+  let icsLines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Nishchay Academy//Study Tracker//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH"
+  ];
+
+  entry.revisions.forEach(r => {
+    const start = new Date(r.datetime);
+    const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour duration
+    
+    icsLines.push("BEGIN:VEVENT");
+    icsLines.push(`UID:${entry.id}_${r.label.replace(/\s+/g, "_")}@nishchayacademy.pwa`);
+    icsLines.push(`DTSTAMP:${formatDate(new Date())}`);
+    icsLines.push(`DTSTART:${formatDate(start)}`);
+    icsLines.push(`DTEND:${formatDate(end)}`);
+    icsLines.push(`SUMMARY:${entry.topic} (${r.label} Revision)`);
+    icsLines.push(`DESCRIPTION:Revision session for ${entry.topic} - Stage: ${r.label}. Logged via Nishchay Student Portal.`);
+    icsLines.push("STATUS:CONFIRMED");
+    icsLines.push("SEQUENCE:0");
+    icsLines.push("BEGIN:VALARM");
+    icsLines.push("TRIGGER:-PT15M");
+    icsLines.push("ACTION:DISPLAY");
+    icsLines.push("DESCRIPTION:Reminder");
+    icsLines.push("END:VALARM");
+    icsLines.push("END:VEVENT");
+  });
+
+  icsLines.push("END:VCALENDAR");
+
+  const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${entry.topic.replace(/\s+/g, "_")}_Revision_Plan.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  showToast("📅 ICS Calendar downloaded! Import it to Google/Outlook.");
+}
+
 // ── UI Rendering ──
 
 function renderToday() {
@@ -1339,3 +1392,4 @@ window.openTravelMode = openTravelMode;
 window.closeTravelMode = closeTravelMode;
 window.renderTravelCard = renderTravelCard;
 window.selectFormulaForRecording = selectFormulaForRecording;
+window.downloadICS = downloadICS;
