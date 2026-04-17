@@ -476,9 +476,36 @@ let pomoDuration = 25 * 60;
 function setPomoMode(mins, label) {
   if (pomoInterval) { clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false; }
   pomoDuration = pomoSecondsLeft = mins * 60;
-  document.getElementById('pomoTime').textContent = `${String(Math.floor(pomoSecondsLeft / 60)).padStart(2,'0')}:00`;
+  updatePomoUI();
   document.getElementById('pomoLabel').textContent = label;
-  document.getElementById('pomoStartBtn').textContent = '▶ Start Session';
+  document.getElementById('pomoStatusF').textContent = label;
+}
+
+function addPomoTime(mins) {
+  pomoSecondsLeft = Math.min(60 * 60, pomoSecondsLeft + (mins * 60));
+  pomoDuration = pomoSecondsLeft; // Update base duration if adjusted
+  updatePomoUI();
+  showToast(`⏰ Added ${mins}m (Total: ${Math.floor(pomoSecondsLeft/60)}m)`);
+}
+
+function updatePomoUI() {
+  const m = Math.floor(pomoSecondsLeft / 60);
+  const s = pomoSecondsLeft % 60;
+  const timeStr = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('pomoTime').textContent = timeStr;
+  document.getElementById('pomoTimeF').textContent = timeStr;
+  const btn = document.getElementById('pomoStartBtn');
+  const btnF = document.getElementById('pomoStartBtnF');
+  const txt = pomoRunning ? '⏸ Pause' : (pomoSecondsLeft === pomoDuration ? '▶ Start' : '▶ Resume');
+  if (btn) btn.textContent = txt;
+  if (btnF) btnF.textContent = txt;
+}
+
+function toggleTimerFullScreen() {
+  const el = document.getElementById('pomoFullscreen');
+  if (!el) return;
+  el.classList.toggle('active');
+  updatePomoUI();
 }
 
 function startPomo() {
@@ -491,12 +518,10 @@ function startPomo() {
     btn.textContent = '⏸ Pause';
     pomoInterval = setInterval(() => {
       pomoSecondsLeft--;
-      const m = Math.floor(pomoSecondsLeft / 60);
-      const s = pomoSecondsLeft % 60;
-      document.getElementById('pomoTime').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      updatePomoUI();
       if (pomoSecondsLeft <= 0) {
         clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
-        btn.textContent = '▶ Start Session';
+        updatePomoUI();
         pomoSecondsLeft = pomoDuration;
         showToast('🎉 Session complete! Take a break.');
         // Audio alert
@@ -1076,8 +1101,11 @@ window.deleteMistake = deleteMistake;
 window.showFormulas = showFormulas;
 window.openMistakeForm = () => document.getElementById('mistakeModal').classList.add('active');
 window.closeMistakeForm = () => document.getElementById('mistakeModal').classList.remove('active');
+window.p(0); // init padding helper
 window.setPomoMode = setPomoMode;
 window.startPomo = startPomo;
+window.addPomoTime = addPomoTime;
+window.toggleTimerFullScreen = toggleTimerFullScreen;
 window.logStudyTime = logStudyTime;
 window.logQuestionsAttempted = logQuestionsAttempted;
 window.saveMockTest = saveMockTest;

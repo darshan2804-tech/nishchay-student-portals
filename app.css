@@ -500,6 +500,34 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
 #subjectTopicList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 #subjectTopicList::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+/* Pomodoro Immersive Full Screen */
+#pomoFullscreen {
+  background: #050816; /* Deepest dark for focus */
+  z-index: 3000;
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  align-items: center;
+  justify-content: center;
+}
+#pomoFullscreen.active {
+  display: flex;
+  animation: fadeIn 0.4s ease;
+}
+#pomoTimeF {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+  animation: pulseTimer 4s ease-in-out infinite;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulseTimer {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(0.99); }
+}
+
 /* Animation delay utility */
 .revision-item:nth-child(n) { animation-delay: calc(var(--i) * 0.05s); }
 .modal-overlay {

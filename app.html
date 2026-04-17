@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=7.4">
+  <link rel="stylesheet" href="app.css?v=7.5">
 
   <!-- Firebase Compat -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -373,16 +373,20 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
             
             <!-- Pomodoro -->
-            <div class="card card-glass">
-              <h3>🍅 Focus Timer</h3>
+            <div class="card card-glass" style="position: relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3>🍎 Focus Timer</h3>
+                <button onclick="toggleTimerFullScreen()" class="btn" style="width:auto; padding:6px 12px; font-size:0.75rem; background:var(--surface2);">⛶ Maximize</button>
+              </div>
               <div style="text-align: center; margin: 24px 0;">
                 <h1 id="pomoTime" style="font-size: 3.5rem; font-variant-numeric: tabular-nums;">25:00</h1>
                 <p id="pomoLabel" style="color: var(--text-dim); margin-top: 5px;">Focus Session</p>
               </div>
-              <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="btn" id="pomo-25" onclick="setPomoMode(25, 'Focus Session')" style="flex: 1; background: var(--surface2);">25m</button>
-                <button class="btn" id="pomo-50" onclick="setPomoMode(50, 'Deep Work')" style="flex: 1; background: var(--surface2);">50m</button>
-                <button class="btn" id="pomo-5" onclick="setPomoMode(5, 'Short Break')" style="flex: 1; background: var(--surface2);">5m</button>
+              <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                <button class="btn" onclick="setPomoMode(25, 'Focus Session')" style="flex: 1; padding:10px; background: var(--surface2); font-size:0.8rem;">25m</button>
+                <button class="btn" onclick="setPomoMode(50, 'Deep Work')" style="flex: 1; padding:10px; background: var(--surface2); font-size:0.8rem;">50m</button>
+                <button class="btn" onclick="setPomoMode(5, 'Break')" style="flex: 1; padding:10px; background: var(--surface2); font-size:0.8rem;">5m</button>
+                <button class="btn" onclick="addPomoTime(10)" style="flex: 1.2; padding:10px; background: var(--surface2); font-size:0.8rem; color:var(--primary);">+10m</button>
               </div>
               <button class="btn btn-primary" id="pomoStartBtn" onclick="startPomo()">▶ Start Session</button>
             </div>
@@ -545,6 +549,18 @@
     </div>
   </div>
 
-  <script src="app.js?v=7.4"></script>
+  <!-- Pomodoro Immersive Full Screen -->
+  <div id="pomoFullscreen" class="modal-overlay" style="background:var(--bg);">
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%;">
+      <p id="pomoStatusF" style="color:var(--text-dim); text-transform:uppercase; letter-spacing:0.2em; font-size:0.9rem; margin-bottom:20px;">Focus Session</p>
+      <h1 id="pomoTimeF" style="font-size: clamp(8rem, 20vw, 15rem); margin:0; line-height:1; letter-spacing:-5px;">25:00</h1>
+      <div style="margin-top:60px; display:flex; gap:20px;">
+        <button id="pomoStartBtnF" class="btn btn-primary" onclick="startPomo()" style="width:200px; font-size:1.1rem; border-radius:50px;">▶ Start</button>
+        <button class="btn" onclick="toggleTimerFullScreen()" style="width:200px; background:var(--surface2); border-radius:50px; font-size:1.1rem;">✕ Minimize</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=7.5"></script>
 </body>
 </html>
