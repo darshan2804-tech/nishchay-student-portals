@@ -154,7 +154,8 @@ function setupListeners() {
   const ts = todayStr();
   const unsubToday = _db.collection('users').doc(App.user.uid).collection('daily').doc(ts)
     .onSnapshot(snap => {
-      App.dailyData[ts] = snap.exists ? snap.data() : { done: {}, ratings: {} };
+      const raw = snap.exists ? snap.data() : {};
+      App.dailyData[ts] = { done: {}, ratings: {}, ...raw };
       if (document.getElementById('page-today').classList.contains('active')) renderToday();
     });
   App._unsubs.push(unsubToday);
@@ -301,54 +302,37 @@ async function savePendingEntry() {
 function renderToday() {
   const ts = todayStr();
   const daily = App.dailyData[ts] || { done: {}, ratings: {} };
+  // Always ensure ratings exists (safety guard for old Firestore docs)
+  if (!daily.ratings) daily.ratings = {};
   const items = getTodayItems();
   const c = document.getElementById('todayContent');
   if (!items.length) {
-    c.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-dim);">No revisions scheduled for today.</div>';
+    c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-dim);">🎉 No revisions scheduled for today!</div>';
     return;
   }
-
-  c.innerHTML = `
-    <div class="card" style="border: none; background: transparent; padding: 0;">
-      ${items.map(item => {
-        const isDone = daily.done[item.key];
-        const rating = daily.ratings[item.key] || '';
-        return `
-          <div class="revision-item" style="display:flex; align-items:center; gap:16px; padding:18px 20px; background:var(--surface); border:1px solid var(--border); border-radius:18px; margin-bottom:12px; transition: all 0.3s var(--smooth); ${isDone ? 'opacity:0.6; border-color:transparent; background:rgba(255,255,255,0.02);' : ''}">
-            <div style="width:40px; height:40px; border-radius:12px; background:${isDone ? 'rgba(255,255,255,0.05)' : 'hsla(var(--p-h),var(--p-s),60%,0.1)'}; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">
-              ${isDone ? '✅' : '⏳'}
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:700; font-size:1rem; color:${isDone ? 'var(--text-muted)' : '#fff'};">${item.topic}</div>
-              <div style="font-size:0.75rem; color:var(--text-dim); display:flex; align-items:center; gap:6px;">
-                 <span style="display:inline-block; width:4px; height:4px; border-radius:50%; background:currentColor;"></span>
-                 ${item.label}
-              </div>
-            </div>
-            <div class="revision-actions" style="display:flex; gap:10px;">
-              ${!isDone ? `
-                <button onclick="rateRevision(this, '${item.key}', 'easy')" class="btn-rate btn-rate-easy">
-                  <span>🍃</span> Easy
-                </button>
-                <button onclick="rateRevision(this, '${item.key}', 'hard')" class="btn-rate btn-rate-hard">
-                  <span>🔥</span> Hard
-                </button>
-              ` : `
-                <div style="display:flex; align-items:center; gap:8px; padding:6px 14px; border-radius:10px; background:${rating === 'easy' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; color:${rating === 'easy' ? 'var(--green)' : 'var(--red)'}; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">
-                  ${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}
-                </div>
-              `}
-            </div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
+  c.innerHTML = items.map(item => {
+    const isDone = !!(daily.done && daily.done[item.key]);
+    const rating = (daily.ratings && daily.ratings[item.key]) || '';
+    const badgeHtml = isDone
+      ? `<div class="rev-badge ${rating === 'easy' ? 'rev-badge-easy' : 'rev-badge-hard'}">${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}</div>`
+      : `<button onclick="rateRevision(this,'${item.key}','easy')" class="btn-rate btn-rate-easy"><span>🍃</span>Easy</button>
+         <button onclick="rateRevision(this,'${item.key}','hard')" class="btn-rate btn-rate-hard"><span>🔥</span>Hard</button>`;
+    return `
+      <div class="revision-item${isDone ? ' revision-done' : ''}" data-key="${item.key}">
+        <div class="rev-icon">${isDone ? '✅' : '⏳'}</div>
+        <div class="rev-body">
+          <div class="rev-topic">${item.topic}</div>
+          <div class="rev-label"><span class="rev-dot"></span>${item.label}</div>
+        </div>
+        <div class="revision-actions">${badgeHtml}</div>
+      </div>`;
+  }).join('');
 }
 
 function getTodayItems(pendingOnly = false) {
   const ts = todayStr();
-  const daily = App.dailyData[ts] || { done: {} };
+  const daily = App.dailyData[ts] || { done: {}, ratings: {} };
+  if (!daily.done) daily.done = {};
   const items = [];
   App.entries.forEach(e => {
     e.revisions.forEach(r => {
@@ -364,25 +348,34 @@ function getTodayItems(pendingOnly = false) {
 }
 
 async function rateRevision(btn, key, rating) {
-  const ts = todayStr();
+  // Immediately update UI before Firestore round-trip
   const row = btn.closest('.revision-item');
   if (row) {
-    row.style.transform = 'scale(0.98)';
-    row.style.opacity = '0.5';
+    row.classList.add('revision-done');
+    row.querySelector('.rev-icon').textContent = '✅';
+    const topic = row.querySelector('.rev-topic');
+    if (topic) topic.style.color = 'var(--text-muted)';
+    const actions = row.querySelector('.revision-actions');
+    if (actions) {
+      actions.innerHTML = `<div class="rev-badge ${rating === 'easy' ? 'rev-badge-easy' : 'rev-badge-hard'}">${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}</div>`;
+    }
   }
-  
-  const ref = _db.collection('users').doc(App.user.uid).collection('daily').doc(ts);
+  // Update App state immediately so badge persists across re-renders
+  const ts = todayStr();
+  if (!App.dailyData[ts]) App.dailyData[ts] = { done: {}, ratings: {} };
+  if (!App.dailyData[ts].ratings) App.dailyData[ts].ratings = {};
+  App.dailyData[ts].done[key] = true;
+  App.dailyData[ts].ratings[key] = rating;
+
   try {
-    await ref.set({
-      done: { [key]: true },
-      ratings: { [key]: rating }
-    }, { merge: true });
-    showToast(`Good job! Marked as ${rating}.`);
+    const ref = _db.collection('users').doc(App.user.uid).collection('daily').doc(ts);
+    await ref.set({ done: { [key]: true }, ratings: { [key]: rating } }, { merge: true });
+    showToast(`Marked as ${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}!`);
   } catch (e) {
     showToast('Failed to save. Try again.');
-    if (row) { row.style.transform = ''; row.style.opacity = '1'; }
   }
 }
+
 
 function renderLog() {
   const c = document.getElementById('logContainer');
@@ -894,24 +887,23 @@ function updateTodayBadge() {
 }
 
 async function bulkNotifyToday() {
-  const items = getTodayItems(true); // ONLY PENDING
-  if (!items.length) return showToast('All revisions for today are completed! 🎉');
-  
-  showToast(`📬 Sending ${items.length} pending notifications...`);
-  if (Notification.permission === 'granted') {
-    items.forEach((item, idx) => {
-      // Stagger notifications slightly to avoid overwhelming the OS
-      setTimeout(() => {
-        new Notification('Revision Due: ' + item.topic, {
-          body: `Time for your ${item.label} revision.`,
-          icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968313.png',
-          tag: item.key
-        });
-      }, idx * 100);
-    });
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then(p => { if (p === 'granted') bulkNotifyToday(); });
+  const pending = getTodayItems(true); // pendingOnly = true → skip completed
+  if (!pending.length) { showToast('🎉 All done for today!'); return; }
+  if (Notification.permission === 'denied') { showToast('Notifications are blocked in browser settings.'); return; }
+  if (Notification.permission !== 'granted') {
+    const result = await Notification.requestPermission();
+    if (result !== 'granted') { showToast('Please allow notifications to use this feature.'); return; }
   }
+  pending.forEach((item, idx) => {
+    setTimeout(() => {
+      new Notification('Revision Due: ' + item.topic, {
+        body: `Time for your ${item.label} revision.`,
+        icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968313.png',
+        tag: item.key
+      });
+    }, idx * 150);
+  });
+  showToast(`🔔 Sent ${pending.length} pending reminder${pending.length > 1 ? 's' : ''}!`);
 }
 
 // ── Utility Exports ──
