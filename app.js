@@ -400,21 +400,36 @@ function downloadICS() {
   icsLines.push("END:VCALENDAR");
 
   const icsContent = icsLines.join("\r\n");
-  const dataUri = "data:text/calendar;charset=utf-8," + encodeURIComponent(icsContent);
-  
-  // Method 1: Standard Link Download
+  const fileName = `${entry.topic.replace(/\s+/g, "_")}_Revision_Plan.ics`;
+  const file = new File([icsContent], fileName, { type: "text/calendar;charset=utf-8" });
+
+  // Web Share API Implementation (Mobile / Safari native prompt)
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({
+      files: [file],
+      title: "Revision Calendar",
+      text: "Import your revision milestones"
+    }).then(() => showToast("📅 Calendar sync launched!"))
+      .catch(err => {
+        // If user aborts share, we just fail silently or do fallback download
+        if (err.name !== 'AbortError') fallbackDownload(file, fileName);
+      });
+  } else {
+    // Clean Fallback for Chrome/Desktop (No sketchy data URIs)
+    fallbackDownload(file, fileName);
+  }
+}
+
+function fallbackDownload(file, fileName) {
+  const url = URL.createObjectURL(file);
   const link = document.createElement("a");
-  link.href = dataUri;
-  link.download = `${entry.topic.replace(/\s+/g, "_")}_Revision_Plan.ics`;
+  link.href = url;
+  link.download = fileName;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  
-  // Method 2: Attempt immediate open (Smoothness)
-  setTimeout(() => {
-    window.location.href = dataUri;
-    showToast("📅 Exported! If it didn't open automatically, please click the downloaded file.");
-  }, 500);
+  URL.revokeObjectURL(url);
+  showToast("📅 File downloaded! Click it in your tray to add to your calendar.");
 }
 
 function openInGoogleCalendar() {
