@@ -24,10 +24,8 @@ const App = {
   examDates: { mains: null, adv: null },
   studyTarget: 6,
   _unsubs: [],
-  currentAddSubject: 'Physics'
+  currentAddSubject: [] // Multi-select array
 };
-
-// ── Helpers ──
 const p = n => String(n).padStart(2, '0');
 const toLocalDate = d => `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 const todayStr = () => toLocalDate(new Date());
@@ -265,9 +263,15 @@ const INTERVALS = [
 ];
 
 function selectSubjectChip(subject, el) {
-  App.currentAddSubject = subject;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
+  if (!Array.isArray(App.currentAddSubject)) App.currentAddSubject = [];
+  
+  if (App.currentAddSubject.includes(subject)) {
+    App.currentAddSubject = App.currentAddSubject.filter(s => s !== subject);
+    el.classList.remove('active');
+  } else {
+    App.currentAddSubject.push(subject);
+    el.classList.add('active');
+  }
 }
 
 async function addEntry() {
@@ -305,8 +309,9 @@ function showResult(entry) {
   
   rc.style.display = 'block';
   title.textContent = entry.topic;
-  subj.textContent = entry.subject;
-  subj.style.color = entry.subject === 'Physics' ? 'var(--primary)' : entry.subject === 'Chemistry' ? 'var(--accent)' : 'var(--green)';
+  const subjects = Array.isArray(entry.subject) ? entry.subject : [entry.subject];
+  subj.textContent = subjects.join(', ') || 'General';
+  subj.style.color = subjects.length === 1 ? (subjects[0] === 'Physics' ? 'var(--primary)' : subjects[0] === 'Chemistry' ? 'var(--accent)' : 'var(--green)') : 'var(--primary)';
 
   list.innerHTML = entry.revisions.map((r, i) => `
     <div class="result-item" style="display:flex; justify-content:space-between; padding:12px 16px; background:rgba(255,255,255,0.02); border-radius:10px; font-size:0.85rem; border:1px solid var(--border); animation-delay: ${i * 0.05}s;">
@@ -330,6 +335,8 @@ async function savePendingEntry() {
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('topicInput').value = '';
     App.pendingEntry = null;
+    App.currentAddSubject = [];
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     
     // Switch to Today tab to see the result if applicable
     setTimeout(() => switchTab('today'), 800);
@@ -433,7 +440,9 @@ function renderLog() {
     <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px;">
       <div>
         <div style="font-weight:600; color:var(--text);">${e.topic}</div>
-        <div style="font-size:0.75rem; color:var(--text-dim);">${new Date(e.dateStr).toLocaleDateString()}</div>
+        <div style="font-size:0.75rem; color:var(--text-dim);">
+          ${Array.isArray(e.subject) ? e.subject.join(', ') : e.subject} • ${new Date(e.dateStr).toLocaleDateString()}
+        </div>
       </div>
       <button onclick="deleteEntry('${e.id}')" class="btn-delete-log">✕</button>
     </div>
@@ -791,11 +800,10 @@ function renderPerformanceScore() {
 function renderSubjects() {
   const counts = { Physics: 0, Chemistry: 0, Maths: 0 };
   App.entries.forEach(e => {
-    const t = e.topic.toLowerCase();
-    if (t.includes('phy')) counts.Physics++;
-    else if (t.includes('chem')) counts.Chemistry++;
-    else if (t.includes('math')) counts.Maths++;
-    else counts.Physics++; // default
+    const subjects = Array.isArray(e.subject) ? e.subject : [e.subject];
+    subjects.forEach(s => {
+      if (counts[s] !== undefined) counts[s]++;
+    });
   });
   const row = document.getElementById('subjRow');
   row.innerHTML = Object.entries(counts).map(([name, count]) => `

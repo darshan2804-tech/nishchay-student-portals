@@ -334,6 +334,7 @@ h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; color: va
 .chip-phy.active { border-color: var(--primary); background: var(--primary-pale); color: var(--primary); box-shadow: 0 0 15px var(--primary-pale); }
 .chip-chem.active { border-color: var(--accent); background: rgba(245, 158, 11, 0.1); color: var(--accent); box-shadow: 0 0 15px rgba(245, 158, 11, 0.1); }
 .chip-mat.active { border-color: var(--green); background: rgba(16, 185, 129, 0.1); color: var(--green); box-shadow: 0 0 15px rgba(16, 185, 129, 0.1); }
+.chip-gen.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.1); }
 
 /* Buttons */
 .btn {
