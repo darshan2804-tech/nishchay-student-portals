@@ -163,8 +163,7 @@ _auth.onAuthStateChanged(async user => {
       if (doc.exists) {
         const data = doc.data();
         
-        // ── Session Restriction (Strict Bypass-Proof Enforcement) ──
-        // NOTE: We now apply this to EVERYONE (including admins) to ensure no bypass
+        // ── Session Restriction (Strict Bypass-Proof Enforcement) v5.1 ──
         let deviceId = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
         if (!deviceId) {
           deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
@@ -179,14 +178,15 @@ _auth.onAuthStateChanged(async user => {
           return (Date.now() - lastSeen.getTime() < 12 * 60 * 60 * 1000);
         });
 
-        // 1. Client-side check
+        console.log(`[Session Check] Device: ${deviceId}, Active Count: ${activeSessIds.length}`);
+
         if (!currentSessions[deviceId] && activeSessIds.length >= MAX_SESSIONS) {
-          alert(`⛔ ACCESS DENIED\n\nLimit Reached: You are already logged in on ${activeSessIds.length} other devices.\n\nPlease log out from your other devices first.`);
+          console.warn("Max sessions reached. Blocking access.");
+          alert(`⛔ ACCESS DENIED (v5.1)\n\nLimit Reached: You are already logged in on ${activeSessIds.length} other devices.\n\nPlease log out from your other devices first.`);
           _auth.signOut();
           return;
         }
 
-        // 2. Database update (Enforced by Firestore Rules)
         const sessionUpdate = {};
         sessionUpdate[`sessions.${deviceId}`] = {
           lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
@@ -196,9 +196,8 @@ _auth.onAuthStateChanged(async user => {
         };
 
         _db.collection('users').doc(user.uid).update(sessionUpdate).catch(err => {
-           console.error("Session sync failed:", err);
            if (err.code === 'permission-denied') {
-             alert("⛔ SESSION BLOCKED\n\nDatabase limit of 2 devices reached. Logging out...");
+             alert("⛔ DATABASE BLOCKED (v5.1)\n\nFirestore Rule rejected 3rd login. Logging out...");
              _auth.signOut();
            }
         });
