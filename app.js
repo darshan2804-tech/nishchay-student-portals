@@ -82,6 +82,10 @@ async function doRegister() {
     await _db.collection('users').doc(cred.user.uid).set({
       name, email, phone, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    // Duplicate to accessRequests for admin visibility
+    await _db.collection('accessRequests').doc(cred.user.uid).set({
+      name, email, phone, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
     showScreen('pendingScreen');
   } catch(e) { showToast(e.message); }
 }
@@ -96,42 +100,64 @@ function doLogout() {
 
 function setupGlobalListeners() {
   // Real-time site settings (logo, etc)
-  _db.collection('site_settings').doc('global')
+  _db.collection('settings').doc('branding')
     .onSnapshot(doc => {
       if (doc.exists) {
         const data = doc.data();
-        if (data.logoUrl) {
+        const finalLogo = data.logo_url || data.logoUrl;
+        if (finalLogo) {
           const l1 = document.getElementById('loginLogo');
           const l2 = document.getElementById('sidebarLogo');
-          if (l1) l1.src = data.logoUrl;
-          if (l2) l2.src = data.logoUrl;
+          if (l1) l1.src = finalLogo;
+          if (l2) l2.src = finalLogo;
         }
       }
     });
 
   // Real-time exam dates
-  _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates')
-    .onSnapshot(doc => {
-      if (doc.exists) App.examDates = doc.data();
-      renderCountdown();
-    });
+  if (App.user) {
+    _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates')
+      .onSnapshot(doc => {
+        if (doc.exists) App.examDates = doc.data();
+        renderCountdown();
+      });
+  }
 }
+
+
+// ── Auth Logic ──
 
 _auth.onAuthStateChanged(async user => {
   loadTheme();
-  if (!user) return showScreen('authScreen');
+  if (!user) {
+    // Clean up any previous listeners
+    App._unsubs.forEach(unsub => unsub());
+    App._unsubs = [];
+    return showScreen('authScreen');
+  }
   App.user = user;
   
-  // Load approved status
-  const doc = await _db.collection('users').doc(user.uid).get();
-  if (doc.exists && doc.data().status === 'approved') {
-    initApp();
-  } else if (ADMIN_EMAILS.includes(user.email)) {
-    await _db.collection('users').doc(user.uid).set({ status: 'approved' }, { merge: true });
-    initApp();
-  } else {
-    showScreen('pendingScreen');
-  }
+  // Real-time listener for user status
+  const unsubStatus = _db.collection('users').doc(user.uid)
+    .onSnapshot(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.status === 'approved' || ADMIN_EMAILS.includes(user.email)) {
+          if (data.status !== 'approved') {
+            _db.collection('users').doc(user.uid).set({ status: 'approved' }, { merge: true });
+          }
+          // Only init if not already on app screen
+          if (document.getElementById('appScreen').style.display !== 'flex') {
+            initApp();
+          }
+        } else {
+          showScreen('pendingScreen');
+        }
+      } else {
+        showScreen('pendingScreen');
+      }
+    });
+  App._unsubs.push(unsubStatus);
 });
 
 // ── App Core ──
@@ -1388,6 +1414,23 @@ async function bulkNotifyToday() {
     }, idx * 150);
   });
   showToast(`🔔 Sent ${pending.length} pending reminder${pending.length > 1 ? 's' : ''}!`);
+}
+
+async function checkApproval() {
+  if (!App.user) return;
+  showToast('Checking status...');
+  try {
+    const doc = await _db.collection('users').doc(App.user.uid).get();
+    if (doc.exists && doc.data().status === 'approved') {
+      showToast('✅ Account Approved!');
+      initApp();
+    } else {
+      showToast('⌛ Still pending. Please wait for admin approval.');
+    }
+  } catch(e) { 
+    console.error(e);
+    showToast('Error checking status. Please try again.');
+  }
 }
 
 // ── Utility Exports ──
