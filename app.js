@@ -164,37 +164,44 @@ _auth.onAuthStateChanged(async user => {
         const data = doc.data();
         
         // ── Session Restriction (Strict Bypass-Proof Enforcement) ──
-        if (!ADMIN_EMAILS.includes(user.email)) {
-          let deviceId = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
-          if (!deviceId) {
-            deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-            localStorage.setItem('STUDY_TRACKER_DEVICE_ID', deviceId);
-          }
-
-          const currentSessions = data.sessions || {};
-          const activeSessIds = Object.keys(currentSessions).filter(id => {
-            const s = currentSessions[id];
-            if (!s.lastSeen) return true;
-            const lastSeen = s.lastSeen.toDate();
-            return (Date.now() - lastSeen.getTime() < 12 * 60 * 60 * 1000);
-          });
-
-          if (!currentSessions[deviceId] && activeSessIds.length >= MAX_SESSIONS) {
-            alert(`⛔ ACCESS DENIED\n\nLimit Reached: You are already logged in on ${activeSessIds.length} other devices.\n\nPlease log out from your other devices first.`);
-            _auth.signOut();
-            return;
-          }
-
-          // Register/Update session inside the user document (Atomic)
-          const sessionUpdate = {};
-          sessionUpdate[`sessions.${deviceId}`] = {
-            lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            deviceName: parseDeviceName(navigator.userAgent)
-          };
-          _db.collection('users').doc(user.uid).update(sessionUpdate);
+        // NOTE: We now apply this to EVERYONE (including admins) to ensure no bypass
+        let deviceId = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
+        if (!deviceId) {
+          deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+          localStorage.setItem('STUDY_TRACKER_DEVICE_ID', deviceId);
         }
+
+        const currentSessions = data.sessions || {};
+        const activeSessIds = Object.keys(currentSessions).filter(id => {
+          const s = currentSessions[id];
+          if (!s.lastSeen) return true;
+          const lastSeen = s.lastSeen.toDate();
+          return (Date.now() - lastSeen.getTime() < 12 * 60 * 60 * 1000);
+        });
+
+        // 1. Client-side check
+        if (!currentSessions[deviceId] && activeSessIds.length >= MAX_SESSIONS) {
+          alert(`⛔ ACCESS DENIED\n\nLimit Reached: You are already logged in on ${activeSessIds.length} other devices.\n\nPlease log out from your other devices first.`);
+          _auth.signOut();
+          return;
+        }
+
+        // 2. Database update (Enforced by Firestore Rules)
+        const sessionUpdate = {};
+        sessionUpdate[`sessions.${deviceId}`] = {
+          lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          deviceName: parseDeviceName(navigator.userAgent)
+        };
+
+        _db.collection('users').doc(user.uid).update(sessionUpdate).catch(err => {
+           console.error("Session sync failed:", err);
+           if (err.code === 'permission-denied') {
+             alert("⛔ SESSION BLOCKED\n\nDatabase limit of 2 devices reached. Logging out...");
+             _auth.signOut();
+           }
+        });
 
         function parseDeviceName(ua) {
           if (/Android/i.test(ua)) return 'Android Device';
