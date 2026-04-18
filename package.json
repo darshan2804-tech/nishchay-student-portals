@@ -1,7 +1,7 @@
 {
   "name": "study-tracker-student-portal",
   "version": "1.0.0",
-  "description": "Nishchay Academy Study Tracker - Student Portal",
+  "description": "STUDY TRACKER Study Tracker - Student Portal",
   "dependencies": {
     "firebase-admin": "^11.11.1",
     "web-push": "^3.6.6"

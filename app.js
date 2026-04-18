@@ -460,7 +460,7 @@ function downloadICS() {
   let icsLines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Nishchay Academy//Study Tracker//EN",
+    "PRODID:-//STUDY TRACKER//Study Tracker//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH"
   ];
@@ -470,12 +470,12 @@ function downloadICS() {
     const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour duration
     
     icsLines.push("BEGIN:VEVENT");
-    icsLines.push(`UID:${entry.id}_${r.label.replace(/\s+/g, "_")}@nishchayacademy.pwa`);
+    icsLines.push(`UID:${entry.id}_${r.label.replace(/\s+/g, "_")}@STUDY TRACKERacademy.pwa`);
     icsLines.push(`DTSTAMP:${formatDate(new Date())}`);
     icsLines.push(`DTSTART:${formatDate(start)}`);
     icsLines.push(`DTEND:${formatDate(end)}`);
     icsLines.push(`SUMMARY:${entry.topic} (${r.label} Revision)`);
-    icsLines.push(`DESCRIPTION:Revision session for ${entry.topic} - Stage: ${r.label}. Logged via Nishchay Student Portal.`);
+    icsLines.push(`DESCRIPTION:Revision session for ${entry.topic} - Stage: ${r.label}. Logged via STUDY TRACKER Student Portal.`);
     icsLines.push("STATUS:CONFIRMED");
     icsLines.push("SEQUENCE:0");
     icsLines.push("BEGIN:VALARM");
