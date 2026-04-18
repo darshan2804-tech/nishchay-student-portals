@@ -1,28 +1,50 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
+    // Helper: check if admin
     function isAdmin() {
-      return request.auth.token.email == "darshanderkar20@gmail.com" || request.auth.token.email == "derkardarshan@gmail.com";
+      return request.auth != null && (
+        request.auth.token.email == "darshanderkar20@gmail.com" ||
+        request.auth.token.email == "derkardarshan@gmail.com"
+      );
     }
 
-    match /{document=**} {
-      allow read, write: if request.auth != null && isAdmin();
-    }
-
+    // Users collection: students can read/write their OWN doc, admin can read/write ALL
     match /users/{userId} {
-      allow read, write: if request.auth != null && (request.auth.uid == userId || request.auth.uid == "iNosUVqODXUgv7t16YaitQezhP2");
-    }
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null
-                         && (request.auth.uid == userId || request.auth.uid == "iNosUVqODXUgv7t16YaitQezhP2");
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
-    match /requests/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Sub-collections under users (entries, daily, settings, mocks, studytime, data)
+    match /users/{userId}/{subcol}/{docId} {
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
-    match /requests/{userId}/{allChildren=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+    // Requests collection: user writes own, admin reads all
+    match /requests/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Enquiries: anyone logged in can create, admin can read/delete
+    match /enquiries/{docId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+
+    // Settings (branding etc): public read, admin write
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Admin Logs: strict admin-only read/write
+    match /adminLogs/{docId} {
+      allow read, write: if isAdmin();
     }
   }
 }

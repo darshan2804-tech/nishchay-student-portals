@@ -50,6 +50,25 @@ function showScreen(id) {
   if (target) target.style.display = (id === 'appScreen' || id === 'pendingScreen') ? 'flex' : 'block';
 }
 
+// ── Branding Sync ──
+function initBrandingSync() {
+  _db.collection('site_settings').doc('branding').onSnapshot(doc => {
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.logo_url) {
+        const logo = document.getElementById('loginLogo');
+        if (logo) logo.src = data.logo_url;
+        // Also update any other logos
+        document.querySelectorAll('.app-logo').forEach(el => el.src = data.logo_url);
+      }
+      if (data.primary_color) {
+        document.documentElement.style.setProperty('--accent', data.primary_color);
+        document.documentElement.style.setProperty('--accent-glow', data.primary_color + '40');
+      }
+    }
+  });
+}
+
 function showAuthTab(tab) {
   const login = document.getElementById('loginForm');
   const reg = document.getElementById('registerForm');
@@ -148,6 +167,11 @@ _auth.onAuthStateChanged(async user => {
           }
           // Only init if not already on app screen
           if (document.getElementById('appScreen').style.display !== 'flex') {
+            _db.collection('users').doc(user.uid).set({
+              lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+              lastDevice: navigator.userAgent,
+              loginCount: firebase.firestore.FieldValue.increment(1)
+            }, { merge: true }).catch(() => {});
             initApp();
           }
         } else {
@@ -1432,6 +1456,9 @@ async function checkApproval() {
     showToast('Error checking status. Please try again.');
   }
 }
+
+// ── Init ──
+initBrandingSync();
 
 // ── Utility Exports ──
 window.doLogin = doLogin;
