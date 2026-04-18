@@ -12,6 +12,7 @@ const FIREBASE_CONFIG = {
   appId: "1:183173939785:web:5fc5eee2f86b87c356b598"
 };
 const ADMIN_EMAILS = ["darshanderkar20@gmail.com", "derkardarshan@gmail.com"];
+const MAX_SESSIONS = 2;
 
 // ── App State ──
 const App = {
@@ -158,9 +159,37 @@ _auth.onAuthStateChanged(async user => {
   
   // Real-time listener for user status
   const unsubStatus = _db.collection('users').doc(user.uid)
-    .onSnapshot(doc => {
+    .onSnapshot(async doc => {
       if (doc.exists) {
         const data = doc.data();
+        
+        // ── Session Restriction ──
+        if (!ADMIN_EMAILS.includes(user.email)) {
+          const sessionSnap = await _db.collection('users').doc(user.uid).collection('sessions').get();
+          const activeSessions = sessionSnap.docs.filter(s => {
+             const lastSeen = s.data().lastSeen?.toDate();
+             // Consider session active if seen in last 24 hours
+             return lastSeen && (Date.now() - lastSeen.getTime() < 24 * 60 * 60 * 1000);
+          });
+
+          // Check if current device is already tracked
+          const deviceId = btoa(navigator.userAgent).substring(0, 20); // Simple ID
+          const currentSession = activeSessions.find(s => s.id === deviceId);
+
+          if (!currentSession && activeSessions.length >= MAX_SESSIONS) {
+            alert(`Access Denied: You have reached the maximum limit of ${MAX_SESSIONS} active logins. Please logout from another device first.`);
+            _auth.signOut();
+            return;
+          }
+
+          // Register/Update session
+          _db.collection('users').doc(user.uid).collection('sessions').doc(deviceId).set({
+            lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+            userAgent: navigator.userAgent,
+            platform: navigator.platform
+          }, { merge: true });
+        }
+
         if (data.status === 'approved' || ADMIN_EMAILS.includes(user.email)) {
           if (data.status !== 'approved') {
             _db.collection('users').doc(user.uid).set({ status: 'approved' }, { merge: true });
