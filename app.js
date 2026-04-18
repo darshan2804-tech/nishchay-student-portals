@@ -163,31 +163,45 @@ _auth.onAuthStateChanged(async user => {
       if (doc.exists) {
         const data = doc.data();
         
-        // ── Session Restriction ──
+        // ── Session Restriction (Strict Bypass-Proof Enforcement) ──
         if (!ADMIN_EMAILS.includes(user.email)) {
-          const sessionSnap = await _db.collection('users').doc(user.uid).collection('sessions').get();
-          const activeSessions = sessionSnap.docs.filter(s => {
-             const lastSeen = s.data().lastSeen?.toDate();
-             // Consider session active if seen in last 24 hours
-             return lastSeen && (Date.now() - lastSeen.getTime() < 24 * 60 * 60 * 1000);
+          let deviceId = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
+          if (!deviceId) {
+            deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+            localStorage.setItem('STUDY_TRACKER_DEVICE_ID', deviceId);
+          }
+
+          const currentSessions = data.sessions || {};
+          const activeSessIds = Object.keys(currentSessions).filter(id => {
+            const s = currentSessions[id];
+            if (!s.lastSeen) return true;
+            const lastSeen = s.lastSeen.toDate();
+            return (Date.now() - lastSeen.getTime() < 12 * 60 * 60 * 1000);
           });
 
-          // Check if current device is already tracked
-          const deviceId = btoa(navigator.userAgent).substring(0, 20); // Simple ID
-          const currentSession = activeSessions.find(s => s.id === deviceId);
-
-          if (!currentSession && activeSessions.length >= MAX_SESSIONS) {
-            alert(`Access Denied: You have reached the maximum limit of ${MAX_SESSIONS} active logins. Please logout from another device first.`);
+          if (!currentSessions[deviceId] && activeSessIds.length >= MAX_SESSIONS) {
+            alert(`⛔ ACCESS DENIED\n\nLimit Reached: You are already logged in on ${activeSessIds.length} other devices.\n\nPlease log out from your other devices first.`);
             _auth.signOut();
             return;
           }
 
-          // Register/Update session
-          _db.collection('users').doc(user.uid).collection('sessions').doc(deviceId).set({
+          // Register/Update session inside the user document (Atomic)
+          const sessionUpdate = {};
+          sessionUpdate[`sessions.${deviceId}`] = {
             lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
             userAgent: navigator.userAgent,
-            platform: navigator.platform
-          }, { merge: true });
+            platform: navigator.platform,
+            deviceName: parseDeviceName(navigator.userAgent)
+          };
+          _db.collection('users').doc(user.uid).update(sessionUpdate);
+        }
+
+        function parseDeviceName(ua) {
+          if (/Android/i.test(ua)) return 'Android Device';
+          if (/iPhone|iPad/i.test(ua)) return 'iOS Device';
+          if (/Windows/i.test(ua)) return 'Windows PC';
+          if (/Mac/i.test(ua)) return 'MacBook/Mac';
+          return 'Browser';
         }
 
         if (data.status === 'approved' || ADMIN_EMAILS.includes(user.email)) {

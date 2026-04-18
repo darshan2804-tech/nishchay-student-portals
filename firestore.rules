@@ -11,11 +11,24 @@ service cloud.firestore {
       );
     }
 
-    // Users collection: students can read/write their OWN doc, admin can read/write ALL
+    // Users: any auth'd user can read, write own doc or admin can write any
     match /users/{userId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == userId;
-      allow update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow update: if request.auth != null && (
+        (request.auth.uid == userId && (
+          // ONLY ALLOW UPDATE IF SESSIONS <= 2
+          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['sessions']) || 
+           request.resource.data.sessions.size() <= 2)
+        )) ||
+        request.auth.token.email == "darshanderkar20@gmail.com" ||
+        request.auth.token.email == "derkardarshan@gmail.com"
+      );
+      allow delete: if request.auth != null && (
+        request.auth.uid == userId ||
+        request.auth.token.email == "darshanderkar20@gmail.com" ||
+        request.auth.token.email == "derkardarshan@gmail.com"
+      );
     }
 
     // Sub-collections under users (entries, daily, settings, mocks, studytime, data)
