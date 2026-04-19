@@ -132,8 +132,8 @@ async function doRegister() {
     await _db.collection('users').doc(cred.user.uid).set({
       name, email, phone, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    // Duplicate to accessRequests for admin visibility
-    await _db.collection('accessRequests').doc(cred.user.uid).set({
+    // Duplicate to requests for admin visibility
+    await _db.collection('requests').doc(cred.user.uid).set({
       name, email, phone, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     showScreen('pendingScreen');
@@ -1699,13 +1699,34 @@ async function bulkNotifyToday() {
 }
 
 async function checkApproval() {
-  if (!App.user) return;
+  if (!App.user) {
+    const user = _auth.currentUser;
+    if (user) { App.user = user; } else return;
+  }
   showToast('Checking status...');
   try {
     const doc = await _db.collection('users').doc(App.user.uid).get();
     if (doc.exists && doc.data().status === 'approved') {
       showToast('✅ Account Approved!');
       initApp();
+    } else if (!doc.exists) {
+      // User was deleted by admin. Push into requests collection again.
+      await _db.collection('requests').doc(App.user.uid).set({
+        name: App.user.displayName || 'Re-requested Student',
+        email: App.user.email,
+        phone: 'N/A', 
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      showToast('📤 Access re-requested. Admin will review it shortly.');
+      
+      // Also ensure they have a users doc pending status so rules work
+      await _db.collection('users').doc(App.user.uid).set({
+        name: App.user.displayName || 'Re-requested Student',
+        email: App.user.email,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(()=>{});
     } else {
       showToast('⌛ Still pending. Please wait for admin approval.');
     }
