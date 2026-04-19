@@ -117,7 +117,14 @@ async function doLogin() {
     sessionStorage.setItem('sh_email', email);
     sessionStorage.setItem('sh_pass', btoa(pass)); // Basic obscurity
   }
-  catch(e) { showToast(e.message); }
+  catch(e) { 
+    console.error(e);
+    if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-login-credentials') {
+      showToast('❌ Incorrect Email or Password');
+    } else {
+      showToast(e.message.replace('Firebase: ', '')); 
+    }
+  }
 }
 
 async function doRegister() {
