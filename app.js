@@ -589,16 +589,16 @@ function showResult(entry) {
 async function savePendingEntry() {
   if (!App.pendingEntry) return;
   const btn = document.getElementById('addToCalIcsBtn');
-  const originalText = btn.textContent;
   btn.disabled = true; 
   btn.textContent = 'Saving to Firestore...';
   
+  console.log('[DEBUG] Starting savePendingEntry for topic:', App.pendingEntry.topic);
   try {
-    // Add a timeout safety since Firestore writes can sometimes hang if rules are rejected silently in some environments
     const savePromise = _db.collection('users').doc(App.user.uid).collection('entries').doc(String(App.pendingEntry.id))
       .set({ ...App.pendingEntry, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 
     await savePromise;
+    console.log('[DEBUG] Firestore write succeeded');
     
     showToast('🚀 Topic synced to cloud!');
     document.getElementById('resultCard').style.display = 'none';
@@ -607,10 +607,9 @@ async function savePendingEntry() {
     App.currentAddSubject = [];
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     
-    // Switch to Today tab to see the result
     setTimeout(() => switchTab('today'), 500);
   } catch(e) { 
-    console.error('Save error:', e);
+    console.error('[DEBUG] Save error:', e);
     showToast('Failed to save: ' + e.message); 
   } finally {
     btn.disabled = false;
@@ -1311,6 +1310,7 @@ async function saveExamDates() {
   if (!mains && !adv) return showToast('Please set at least one date.');
   
   if (!App.user) return;
+  console.log('[DEBUG] Saving exam dates:', { mains, adv });
 
   // Optimistically close and update local state
   App.examDates = { mains, adv };
@@ -1319,9 +1319,10 @@ async function saveExamDates() {
   
   try {
     await _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv });
+    console.log('[DEBUG] Exam dates write succeeded');
     showToast('📅 Exam dates saved!');
   } catch(e) { 
-    console.error('Exam dates save error:', e);
+    console.error('[DEBUG] Exam dates save error:', e);
     showToast('Failed to save to cloud, but kept locally.'); 
   }
 }
