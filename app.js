@@ -1,8 +1,8 @@
-﻿// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// app.js â€” Unified Study Tracker Logic v5.0
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════
+// app.js — Unified Study Tracker Logic v5.0
+// ═══════════════════════════════════════════════════════════════
 
-// â”€â”€ Firebase Config â”€â”€
+// ── Firebase Config ──
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBRw3GxukFyPEcjOY-0FIsXBk2p-7TQivM",
   authDomain: "study-tracker-52de8.firebaseapp.com",
@@ -14,7 +14,7 @@ const FIREBASE_CONFIG = {
 const ADMIN_EMAILS = ["darshanderkar20@gmail.com", "derkardarshan@gmail.com"];
 const MAX_SESSIONS = 2;
 
-// â”€â”€ App State â”€â”€
+// ── App State ──
 const App = {
   user: null,
   entries: [],
@@ -39,7 +39,7 @@ const showToast = msg => {
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 };
 
-// â”€â”€ Firestore Timeout Wrapper â”€â”€
+// ── Firestore Timeout Wrapper ──
 // Ensures a Firestore promise doesn't hang indefinitely.
 // If Firestore doesn't respond within `ms` milliseconds, resolves with null instead of hanging.
 const withTimeout = (promise, ms = 10000) => {
@@ -47,19 +47,19 @@ const withTimeout = (promise, ms = 10000) => {
   return Promise.race([promise, timer]);
 };
 
-// â”€â”€ Firebase Init â”€â”€
+// ── Firebase Init ──
 firebase.initializeApp(FIREBASE_CONFIG);
 const _auth = firebase.auth();
 const _db = firebase.firestore();
 
-// â”€â”€ Auth Logic â”€â”€
+// ── Auth Logic ──
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
   const target = document.getElementById(id);
   if (target) target.style.display = (id === 'appScreen' || id === 'pendingScreen') ? 'flex' : 'block';
 }
 
-// â”€â”€ Branding Sync â”€â”€
+// ── Branding Sync ──
 function initBrandingSync() {
   _db.collection('site_settings').doc('branding').onSnapshot(doc => {
     if (doc.exists) {
@@ -163,7 +163,7 @@ function setupGlobalListeners() {
 }
 
 
-// â”€â”€ Device Fingerprint (bypass-proof) â”€â”€
+// ── Device Fingerprint (bypass-proof) ──
 function _getDeviceId() {
   // Use BOTH localStorage and sessionStorage so clearing one doesn't bypass
   let id = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
@@ -229,7 +229,7 @@ async function _registerSession(user) {
       }
     });
 
-    // Step 2: Build the update â€” prune stale sessions
+    // Step 2: Build the update — prune stale sessions
     const updatePayload = {};
     staleIds.forEach(sid => {
       updatePayload[`sessions.${sid}`] = firebase.firestore.FieldValue.delete();
@@ -257,8 +257,8 @@ async function _registerSession(user) {
         return now - ls.getTime() < SESSION_TTL_MS;
       });
       if (recheckActive.length >= MAX_SESSIONS) {
-        console.warn(`[Session] BLOCKED â€” ${recheckActive.length} active sessions, max ${MAX_SESSIONS}`);
-        alert(`â›” ACCESS DENIED\n\nYou are already logged in on ${recheckActive.length} device(s).\nMaximum allowed: ${MAX_SESSIONS}\n\nPlease log out from another device first, or ask the admin to revoke a session.`);
+        console.warn(`[Session] BLOCKED — ${recheckActive.length} active sessions, max ${MAX_SESSIONS}`);
+        alert(`⛔ ACCESS DENIED\n\nYou are already logged in on ${recheckActive.length} device(s).\nMaximum allowed: ${MAX_SESSIONS}\n\nPlease log out from another device first, or ask the admin to revoke a session.`);
         await _auth.signOut();
         return false;
       }
@@ -287,7 +287,7 @@ async function _registerSession(user) {
         // If permission-denied, admin revoked us
         if (e.code === 'permission-denied') {
           clearInterval(_heartbeatTimer);
-          alert('â›” Your session was revoked by the admin. Logging out...');
+          alert('⛔ Your session was revoked by the admin. Logging out...');
           await _auth.signOut();
           window.location.reload();
         }
@@ -297,7 +297,7 @@ async function _registerSession(user) {
     return true;
   } catch(err) {
     if (err.code === 'permission-denied') {
-      alert('â›” Firestore blocked this login (session limit enforced by rules). Logging out...');
+      alert('⛔ Firestore blocked this login (session limit enforced by rules). Logging out...');
       await _auth.signOut();
       return false;
     }
@@ -306,7 +306,7 @@ async function _registerSession(user) {
   }
 }
 
-// â”€â”€ Auth State Handler â”€â”€
+// ── Auth State Handler ──
 _auth.onAuthStateChanged(async user => {
   // Debug: Log current user email for rule verification
   console.log('[DEBUG] Auth state changed. User:', user ? user.email : 'None');
@@ -383,7 +383,7 @@ _auth.onAuthStateChanged(async user => {
 
         // If status was revoked, force logout
         if (liveData.status !== 'approved' && !isAdmin) {
-          alert('â›” Your access has been revoked by the admin.');
+          alert('⛔ Your access has been revoked by the admin.');
           _auth.signOut();
           window.location.reload();
           return;
@@ -393,7 +393,7 @@ _auth.onAuthStateChanged(async user => {
         const deviceId = _getDeviceId();
         const sessions = liveData.sessions || {};
         if (_sessionRegistered && !isAdmin && !sessions[deviceId]) {
-          alert('â›” Your session on this device was revoked by the admin. Logging out...');
+          alert('⛔ Your session on this device was revoked by the admin. Logging out...');
           _sessionRegistered = false;
           if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
           _auth.signOut();
@@ -407,7 +407,7 @@ _auth.onAuthStateChanged(async user => {
   }
 });
 
-// â”€â”€ App Core â”€â”€
+// ── App Core ──
 async function initApp() {
   showScreen('appScreen');
   updateClock(); setInterval(updateClock, 1000);
@@ -484,13 +484,13 @@ async function loadSettings() {
   } catch(e) {}
 }
 
-// â”€â”€ UI Interactivity â”€â”€
+// ── UI Interactivity ──
 function loadTheme() {
   const saved = localStorage.getItem('theme') || 'dark-mode';
   document.body.classList.remove('light-mode', 'dark-mode');
   document.body.classList.add(saved);
   const btn = document.getElementById('themeBtn');
-  if (btn) btn.textContent = saved === 'dark-mode' ? 'ðŸŒ™' : 'â˜€ï¸';
+  if (btn) btn.textContent = saved === 'dark-mode' ? '🌙' : '☀️';
 }
 
 function toggleTheme() {
@@ -500,7 +500,7 @@ function toggleTheme() {
   document.body.classList.add(next);
   localStorage.setItem('theme', next);
   const btn = document.getElementById('themeBtn');
-  if (btn) btn.textContent = next === 'dark-mode' ? 'ðŸŒ™' : 'â˜€ï¸';
+  if (btn) btn.textContent = next === 'dark-mode' ? '🌙' : '☀️';
 }
 
 function switchTab(name) {
@@ -541,7 +541,7 @@ function syncInputTime() {
   document.getElementById('studyTime').value = `${p(now.getHours())}:${p(now.getMinutes())}`;
 }
 
-// â”€â”€ Tracker Logic â”€â”€
+// ── Tracker Logic ──
 const INTERVALS = [
   { label: 'Immediate', mins: 0, type: 'short' },
   { label: '12 hrs', mins: 720, type: 'short' },
@@ -607,22 +607,22 @@ function showResult(entry) {
   list.innerHTML = entry.revisions.map((r, i) => `
     <div class="result-item" style="display:flex; justify-content:space-between; padding:12px 16px; background:rgba(255,255,255,0.02); border-radius:10px; font-size:0.85rem; border:1px solid var(--border); animation-delay: ${i * 0.05}s;">
       <span style="font-weight:700; color:var(--primary);">${r.label}</span>
-      <span style="color:var(--text-dim);">${new Date(r.datetime).toLocaleDateString(undefined, {month:'short', day:'numeric'})} â€¢ ${new Date(r.datetime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+      <span style="color:var(--text-dim);">${new Date(r.datetime).toLocaleDateString(undefined, {month:'short', day:'numeric'})} • ${new Date(r.datetime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
     </div>
   `).join('');
   
   rc.scrollIntoView({ behavior: 'smooth' });
 }
 
-async function savePendingEntry() {
+function savePendingEntry() {
   if (!App.pendingEntry) return;
   const btn = document.getElementById('addToCalIcsBtn');
   btn.disabled = true;
   btn.textContent = 'Saving...';
 
-  // Immediate UI update â€” don't wait for Firestore
+  // Immediate UI — no waiting for Firestore
   const entryToSave = { ...App.pendingEntry, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-  showToast('ðŸš€ Topic saved!');
+  showToast('🚀 Topic saved!');
   document.getElementById('resultCard').style.display = 'none';
   document.getElementById('topicInput').value = '';
   App.pendingEntry = null;
@@ -632,10 +632,10 @@ async function savePendingEntry() {
   btn.textContent = 'Save to Cloud Firestore';
   setTimeout(() => switchTab('today'), 400);
 
-  // Background sync â€” fire and forget
+  // Background sync
   _db.collection('users').doc(App.user.uid).collection('entries')
     .doc(String(entryToSave.id)).set(entryToSave)
-    .catch(e => console.warn('Background sync failed:', e));
+    .catch(e => console.warn('Entry sync failed:', e));
 }
 
 
@@ -689,7 +689,7 @@ function downloadICS() {
       files: [file],
       title: "Revision Calendar",
       text: "Import your revision milestones"
-    }).then(() => showToast("ðŸ“… Calendar sync launched!"))
+    }).then(() => showToast("📅 Calendar sync launched!"))
       .catch(err => {
         // If user aborts share, we just fail silently or do fallback download
         if (err.name !== 'AbortError') fallbackDownload(file, fileName);
@@ -709,7 +709,7 @@ function fallbackDownload(file, fileName) {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
-  showToast("ðŸ“… File downloaded! Click it in your tray to add to your calendar.");
+  showToast("📅 File downloaded! Click it in your tray to add to your calendar.");
 }
 
 function openInGoogleCalendar() {
@@ -721,7 +721,7 @@ function openInGoogleCalendar() {
   // For now, let's keep the focus on the ICS which handles all 8 at once.
 }
 
-// â”€â”€ UI Rendering â”€â”€
+// ── UI Rendering ──
 
 function renderToday() {
   const ts = todayStr();
@@ -731,19 +731,19 @@ function renderToday() {
   const items = getTodayItems();
   const c = document.getElementById('todayContent');
   if (!items.length) {
-    c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-dim);">ðŸŽ‰ No revisions scheduled for today!</div>';
+    c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-dim);">🎉 No revisions scheduled for today!</div>';
     return;
   }
   c.innerHTML = items.map(item => {
     const isDone = !!(daily.done && daily.done[item.key]);
     const rating = (daily.ratings && daily.ratings[item.key]) || '';
     const badgeHtml = isDone
-      ? `<div class="rev-badge ${rating === 'easy' ? 'rev-badge-easy' : 'rev-badge-hard'}">${rating === 'easy' ? 'ðŸƒ Easy' : 'ðŸ”¥ Hard'}</div>`
-      : `<button onclick="rateRevision(this,'${item.key}','easy')" class="btn-rate btn-rate-easy"><span>ðŸƒ</span>Easy</button>
-         <button onclick="rateRevision(this,'${item.key}','hard')" class="btn-rate btn-rate-hard"><span>ðŸ”¥</span>Hard</button>`;
+      ? `<div class="rev-badge ${rating === 'easy' ? 'rev-badge-easy' : 'rev-badge-hard'}">${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}</div>`
+      : `<button onclick="rateRevision(this,'${item.key}','easy')" class="btn-rate btn-rate-easy"><span>🍃</span>Easy</button>
+         <button onclick="rateRevision(this,'${item.key}','hard')" class="btn-rate btn-rate-hard"><span>🔥</span>Hard</button>`;
     return `
       <div class="revision-item${isDone ? ' revision-done' : ''}" data-key="${item.key}">
-        <div class="rev-icon">${isDone ? 'âœ…' : 'â³'}</div>
+        <div class="rev-icon">${isDone ? '✅' : '⏳'}</div>
         <div class="rev-body">
           <div class="rev-topic">${item.topic}</div>
           <div class="rev-label"><span class="rev-dot"></span>${item.label}</div>
@@ -776,12 +776,12 @@ async function rateRevision(btn, key, rating) {
   const row = btn.closest('.revision-item');
   if (row) {
     row.classList.add('revision-done');
-    row.querySelector('.rev-icon').textContent = 'âœ…';
+    row.querySelector('.rev-icon').textContent = '✅';
     const topic = row.querySelector('.rev-topic');
     if (topic) topic.style.color = 'var(--text-muted)';
     const actions = row.querySelector('.revision-actions');
     if (actions) {
-      actions.innerHTML = `<div class="rev-badge ${rating === 'easy' ? 'rev-badge-easy' : 'rev-badge-hard'}">${rating === 'easy' ? 'ðŸƒ Easy' : 'ðŸ”¥ Hard'}</div>`;
+      actions.innerHTML = `<div class="rev-badge ${rating === 'easy' ? 'rev-badge-easy' : 'rev-badge-hard'}">${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}</div>`;
     }
   }
   // Update App state immediately so badge persists across re-renders
@@ -791,11 +791,10 @@ async function rateRevision(btn, key, rating) {
   App.dailyData[ts].done[key] = true;
   App.dailyData[ts].ratings[key] = rating;
 
-  // Fire-and-forget: UI already updated above
+  // Background sync — UI already updated above
   _db.collection('users').doc(App.user.uid).collection('daily').doc(ts)
     .set({ done: { [key]: true }, ratings: { [key]: rating } }, { merge: true })
     .catch(e => console.warn('Rating sync failed:', e));
-
 }
 
 
@@ -813,10 +812,10 @@ function renderLog() {
       <div>
         <div style="font-weight:600; color:var(--text);">${e.topic}</div>
         <div style="font-size:0.75rem; color:var(--text-dim);">
-          ${Array.isArray(e.subject) ? e.subject.join(', ') : e.subject} â€¢ ${new Date(e.dateStr).toLocaleDateString()}
+          ${Array.isArray(e.subject) ? e.subject.join(', ') : e.subject} • ${new Date(e.dateStr).toLocaleDateString()}
         </div>
       </div>
-      <button onclick="deleteEntry('${e.id}')" class="btn-delete-log">âœ•</button>
+      <button onclick="deleteEntry('${e.id}')" class="btn-delete-log">✕</button>
     </div>
   `).join('');
 }
@@ -827,7 +826,7 @@ async function deleteEntry(id) {
   showToast('Topic deleted.');
 }
 
-// â”€â”€ Pomodoro Timer â”€â”€
+// ── Pomodoro Timer ──
 let pomoInterval = null;
 let pomoRunning = false;
 let pomoSecondsLeft = 25 * 60;
@@ -845,7 +844,7 @@ function addPomoTime(mins) {
   pomoSecondsLeft = Math.min(60 * 60, pomoSecondsLeft + (mins * 60));
   pomoDuration = pomoSecondsLeft; // Update base duration if adjusted
   updatePomoUI();
-  showToast(`â° Added ${mins}m (Total: ${Math.floor(pomoSecondsLeft/60)}m)`);
+  showToast(`⏰ Added ${mins}m (Total: ${Math.floor(pomoSecondsLeft/60)}m)`);
 }
 
 function updatePomoUI() {
@@ -856,7 +855,7 @@ function updatePomoUI() {
   document.getElementById('pomoTimeF').textContent = timeStr;
   const btn = document.getElementById('pomoStartBtn');
   const btnF = document.getElementById('pomoStartBtnF');
-  const txt = pomoRunning ? 'â¸ Pause' : (pomoSecondsLeft === pomoDuration ? 'â–¶ Start' : 'â–¶ Resume');
+  const txt = pomoRunning ? '⏸ Pause' : (pomoSecondsLeft === pomoDuration ? '▶ Start' : '▶ Resume');
   if (btn) btn.textContent = txt;
   if (btnF) btnF.textContent = txt;
 }
@@ -872,10 +871,10 @@ function startPomo() {
   const btn = document.getElementById('pomoStartBtn');
   if (pomoRunning) {
     clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
-    btn.textContent = 'â–¶ Resume';
+    btn.textContent = '▶ Resume';
   } else {
     pomoRunning = true;
-    btn.textContent = 'â¸ Pause';
+    btn.textContent = '⏸ Pause';
     pomoInterval = setInterval(() => {
       pomoSecondsLeft--;
       updatePomoUI();
@@ -883,7 +882,7 @@ function startPomo() {
         clearInterval(pomoInterval); pomoInterval = null; pomoRunning = false;
         updatePomoUI();
         pomoSecondsLeft = pomoDuration;
-        showToast('ðŸŽ‰ Session complete! Take a break.');
+        showToast('🎉 Session complete! Take a break.');
         // Audio alert
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -896,28 +895,31 @@ function startPomo() {
   }
 }
 
-// â”€â”€ Questions Attempted â”€â”€
+// ── Questions Attempted ──
 function logQuestionsAttempted() {
   const count = parseInt(document.getElementById('qAttemptedInput')?.value);
   const subj = document.getElementById('qSubjectSelect')?.value;
   if (!count || count < 1) return showToast('Enter a valid count');
   const ts = todayStr();
   document.getElementById('qAttemptedInput').value = '';
-  showToast(`âœ… Logged ${count} questions for ${subj}`);
+  showToast(`✅ Logged ${count} questions for ${subj}`);
   _db.collection('users').doc(App.user.uid).collection('daily').doc(ts)
     .set({ questionsAttempted: firebase.firestore.FieldValue.increment(count), lastSubject: subj }, { merge: true })
     .catch(e => console.warn('Q sync failed:', e));
 }
 
-// â”€â”€ Study Time â”€â”€
+
+// ── Study Time ──
 function logStudyTime() {
   const hours = parseFloat(document.getElementById('studyHoursInput')?.value);
   const subj = document.getElementById('studySubjectSelect')?.value;
   if (!hours || hours <= 0) return showToast('Enter valid hours');
   const ts = todayStr();
-  _db.collection('users').doc(App.user.uid).collection('studytime').doc(ts).set({ date: ts, subject: subj, hours: firebase.firestore.FieldValue.increment(hours) }, { merge: true }).catch(e => console.warn('Study time sync failed:', e));
   document.getElementById('studyHoursInput').value = '';
-  showToast(`âœ… Logged ${hours}h of ${subj}`);
+  showToast(`✅ Logged ${hours}h of ${subj}`);
+  _db.collection('users').doc(App.user.uid).collection('studytime').doc(ts)
+    .set({ date: ts, subject: subj, hours: firebase.firestore.FieldValue.increment(hours) }, { merge: true })
+    .catch(e => console.warn('Study time sync failed:', e));
 }
 
 function renderStudyTime() {
@@ -932,8 +934,8 @@ function renderStudyTime() {
     </div>`).join('');
 }
 
-// â”€â”€ Mock Test Tracker â”€â”€
-async function saveMockTest() {
+// ── Mock Test Tracker ──
+function saveMockTest() {
   const score = parseFloat(document.getElementById('mockScore')?.value);
   const maxScore = parseFloat(document.getElementById('mockMaxScore')?.value) || 300;
   const testName = document.getElementById('mockName')?.value?.trim();
@@ -941,7 +943,7 @@ async function saveMockTest() {
   document.getElementById('mockScore').value = '';
   document.getElementById('mockName').value = '';
   document.getElementById('mockModal').classList.remove('active');
-  showToast('ðŸ“Š Mock test logged!');
+  showToast('📊 Mock test logged!');
   _db.collection('users').doc(App.user.uid).collection('mocks').add({
     date: todayStr(), score, maxScore, testName,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -962,28 +964,28 @@ function renderMockTests() {
   }).join('');
 }
 
-// â”€â”€ Flashcards â”€â”€
+// ── Flashcards ──
 const FLASHCARDS = {
   Physics: [
     {q: 'Newton\'s 2nd Law', a: 'F = ma'},
-    {q: 'Work-Energy Theorem', a: 'W = Î”KE = Â½mvÂ² - Â½muÂ²'},
-    {q: 'Coulomb\'s Law', a: 'F = kqâ‚qâ‚‚/rÂ²'},
+    {q: 'Work-Energy Theorem', a: 'W = ΔKE = ½mv² - ½mu²'},
+    {q: 'Coulomb\'s Law', a: 'F = kq₁q₂/r²'},
     {q: 'Ohm\'s Law', a: 'V = IR'},
-    {q: 'Snell\'s Law', a: 'nâ‚sinÎ¸â‚ = nâ‚‚sinÎ¸â‚‚'},
+    {q: 'Snell\'s Law', a: 'n₁sinθ₁ = n₂sinθ₂'},
   ],
   Chemistry: [
     {q: 'Ideal Gas Law', a: 'PV = nRT'},
-    {q: 'Mole Concept', a: 'n = m/M = N/Nâ‚'},
-    {q: 'pH formula', a: 'pH = -log[Hâº]'},
-    {q: 'Nernst Equation', a: 'E = EÂ° - (RT/nF)lnQ'},
-    {q: 'de Broglie', a: 'Î» = h/mv'},
+    {q: 'Mole Concept', a: 'n = m/M = N/Nₐ'},
+    {q: 'pH formula', a: 'pH = -log[H⁺]'},
+    {q: 'Nernst Equation', a: 'E = E° - (RT/nF)lnQ'},
+    {q: 'de Broglie', a: 'λ = h/mv'},
   ],
   Maths: [
-    {q: 'Quadratic Formula', a: 'x = (-b Â± âˆš(bÂ²-4ac)) / 2a'},
-    {q: 'sinÂ²x + cosÂ²x', a: '= 1'},
-    {q: 'Integration of eË£', a: 'âˆ«eË£ dx = eË£ + C'},
-    {q: 'Sum of AP', a: 'Sâ‚™ = n/2 Ã— (2a + (n-1)d)'},
-    {q: 'Area of Triangle', a: '= Â½|xâ‚(yâ‚‚-yâ‚ƒ) + xâ‚‚(yâ‚ƒ-yâ‚) + xâ‚ƒ(yâ‚-yâ‚‚)|'},
+    {q: 'Quadratic Formula', a: 'x = (-b ± √(b²-4ac)) / 2a'},
+    {q: 'sin²x + cos²x', a: '= 1'},
+    {q: 'Integration of eˣ', a: '∫eˣ dx = eˣ + C'},
+    {q: 'Sum of AP', a: 'Sₙ = n/2 × (2a + (n-1)d)'},
+    {q: 'Area of Triangle', a: '= ½|x₁(y₂-y₃) + x₂(y₃-y₁) + x₃(y₁-y₂)|'},
   ]
 };
 
@@ -1013,7 +1015,7 @@ function flipFlashcard() { flashcardFlipped = !flashcardFlipped; renderFlashcard
 function nextFlashcard() { const c = FLASHCARDS[flashcardSubj]; flashcardIdx = (flashcardIdx + 1) % c.length; flashcardFlipped = false; renderFlashcard(); }
 function prevFlashcard() { const c = FLASHCARDS[flashcardSubj]; flashcardIdx = (flashcardIdx - 1 + c.length) % c.length; flashcardFlipped = false; renderFlashcard(); }
 
-// â”€â”€ Streak â”€â”€
+// ── Streak ──
 function computeStreak() {
   const dates = new Set(App.entries.map(e => e.dateStr));
   let streak = 0;
@@ -1037,9 +1039,9 @@ function initTools() {
   initFormulaAudioDB();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// PHASE 4 â€” Audio Formula Recording (IndexedDB + MediaRecorder)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════
+// PHASE 4 — Audio Formula Recording (IndexedDB + MediaRecorder)
+// ═══════════════════════════════════════════════════════════════
 let formulaAudioDB = null;
 let currentRecordingKey = null;
 let mediaRecorder = null;
@@ -1089,13 +1091,13 @@ async function toggleRecording() {
         const blob = new Blob(audioChunks, { type: 'audio/webm' });
         saveFormulaAudio(blob);
         stream.getTracks().forEach(t => t.stop());
-        document.getElementById('recordBtn').textContent = 'ðŸ”´ Start Recording';
+        document.getElementById('recordBtn').textContent = '🔴 Start Recording';
         document.getElementById('recordingWave').style.display = 'none';
         isRecording = false;
       };
       mediaRecorder.start();
       isRecording = true;
-      document.getElementById('recordBtn').textContent = 'â¹ Stop Recording';
+      document.getElementById('recordBtn').textContent = '⏹ Stop Recording';
       document.getElementById('recordingWave').style.display = 'block';
     } catch (e) {
       showToast('Microphone access denied.');
@@ -1108,7 +1110,7 @@ function saveFormulaAudio(blob) {
   const tx = formulaAudioDB.transaction('recordings', 'readwrite');
   tx.objectStore('recordings').put({ key: currentRecordingKey, blob });
   tx.oncomplete = () => {
-    showToast('âœ… Audio saved!');
+    showToast('✅ Audio saved!');
     document.getElementById('playAudioBtn').disabled = false;
     document.getElementById('deleteAudioBtn').disabled = false;
   };
@@ -1124,8 +1126,8 @@ function playFormulaAudio() {
     const audio = new Audio(url);
     audio.onended = () => URL.revokeObjectURL(url);
     audio.play();
-    document.getElementById('playAudioBtn').textContent = 'â¸ Playing...';
-    audio.onended = () => { document.getElementById('playAudioBtn').textContent = 'â–¶ Play'; URL.revokeObjectURL(url); };
+    document.getElementById('playAudioBtn').textContent = '⏸ Playing...';
+    audio.onended = () => { document.getElementById('playAudioBtn').textContent = '▶ Play'; URL.revokeObjectURL(url); };
   };
 }
 
@@ -1146,16 +1148,16 @@ function startListenMode() {
   if (panel.style.display === 'none' || !panel.style.display) {
     panel.style.display = 'block';
     if (!currentRecordingKey) {
-      showToast('ðŸ‘† Click any formula below to select it for recording.');
+      showToast('👆 Click any formula below to select it for recording.');
     }
   } else {
     panel.style.display = 'none';
   }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// PHASE 5 â€” Travel Mode (One-Handed Swipe Flashcards)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════
+// PHASE 5 — Travel Mode (One-Handed Swipe Flashcards)
+// ═══════════════════════════════════════════════════════════════
 let travelTouchStartY = 0;
 
 function openTravelMode() {
@@ -1199,7 +1201,7 @@ function renderTravelCard() {
   if (counter) counter.textContent = `${flashcardIdx + 1} / ${cards.length}`;
 }
 
-// â”€â”€ Mistakes & Tools â”€â”€
+// ── Mistakes & Tools ──
 function renderMistakes() {
   const list = document.getElementById('mistakeList');
   if (!list) return;
@@ -1211,11 +1213,11 @@ function renderMistakes() {
   list.innerHTML = mistakes.map((m, i) => `
     <div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
       <div style="flex:1;">
-        <div style="font-size:0.6rem;color:var(--accent);font-weight:700;text-transform:uppercase;">${m.subj} â€¢ ${m.type}</div>
+        <div style="font-size:0.6rem;color:var(--accent);font-weight:700;text-transform:uppercase;">${m.subj} • ${m.type}</div>
         <div style="font-weight:600;margin:4px 0;font-size:0.9rem;">${m.topic}</div>
         ${m.note ? `<div style="font-size:0.75rem;color:var(--text-dim);">${m.note}</div>` : ''}
       </div>
-      <button onclick="deleteMistake(${i})" style="background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer;flex-shrink:0;">ðŸ—‘ï¸</button>
+      <button onclick="deleteMistake(${i})" style="background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer;flex-shrink:0;">🗑️</button>
     </div>`).join('');
 }
 
@@ -1247,23 +1249,23 @@ function showFormulas(subj) {
   const list = document.getElementById('formulaList');
   const data = {
     Physics: [
-      {n:'F=ma', eq:'Newton\'s 2nd Law'},{n:'v=u+at', eq:'Kinematics 1'},{n:'vÂ²=uÂ²+2as', eq:'Kinematics 3'},
-      {n:'KE=Â½mvÂ²', eq:'Kinetic Energy'},{n:'p=mv', eq:'Linear Momentum'},{n:'F=kqâ‚qâ‚‚/rÂ²', eq:'Coulomb\'s Law'},
-      {n:'V=IR', eq:'Ohm\'s Law'},{n:'P=VI=IÂ²R', eq:'Power'},{n:'E=hf', eq:'Photon Energy'},
-      {n:'nâ‚sinÎ¸â‚=nâ‚‚sinÎ¸â‚‚', eq:'Snell\'s Law'},{n:'T=2Ï€âˆš(l/g)', eq:'Simple Pendulum'},{n:'PV=nRT', eq:'Ideal Gas'}
+      {n:'F=ma', eq:'Newton\'s 2nd Law'},{n:'v=u+at', eq:'Kinematics 1'},{n:'v²=u²+2as', eq:'Kinematics 3'},
+      {n:'KE=½mv²', eq:'Kinetic Energy'},{n:'p=mv', eq:'Linear Momentum'},{n:'F=kq₁q₂/r²', eq:'Coulomb\'s Law'},
+      {n:'V=IR', eq:'Ohm\'s Law'},{n:'P=VI=I²R', eq:'Power'},{n:'E=hf', eq:'Photon Energy'},
+      {n:'n₁sinθ₁=n₂sinθ₂', eq:'Snell\'s Law'},{n:'T=2π√(l/g)', eq:'Simple Pendulum'},{n:'PV=nRT', eq:'Ideal Gas'}
     ],
     Chemistry: [
-      {n:'n=m/M', eq:'Mole Concept'},{n:'PV=nRT', eq:'Ideal Gas Law'},{n:'pH=-log[Hâº]', eq:'pH Scale'},
-      {n:'Î”G=Î”H-TÎ”S', eq:'Gibbs Energy'},{n:'E=EÂ°-RT/nFÂ·lnQ', eq:'Nernst Eqn'},{n:'Î»=h/mv', eq:'de Broglie'},
-      {n:'tâ‚/â‚‚=0.693/k', eq:'Half-Life'},{n:'KaÃ—Kb=Kw', eq:'Acid-Base'},{n:'Moles=N/Nâ‚', eq:'Avogadro'},
-      {n:'q=mcÎ”T', eq:'Calorimetry'},{n:'Î”U=q+w', eq:'1st Law Thermo'},{n:'Kp=Kc(RT)^Î”n', eq:'Kp vs Kc'}
+      {n:'n=m/M', eq:'Mole Concept'},{n:'PV=nRT', eq:'Ideal Gas Law'},{n:'pH=-log[H⁺]', eq:'pH Scale'},
+      {n:'ΔG=ΔH-TΔS', eq:'Gibbs Energy'},{n:'E=E°-RT/nF·lnQ', eq:'Nernst Eqn'},{n:'λ=h/mv', eq:'de Broglie'},
+      {n:'t₁/₂=0.693/k', eq:'Half-Life'},{n:'Ka×Kb=Kw', eq:'Acid-Base'},{n:'Moles=N/Nₐ', eq:'Avogadro'},
+      {n:'q=mcΔT', eq:'Calorimetry'},{n:'ΔU=q+w', eq:'1st Law Thermo'},{n:'Kp=Kc(RT)^Δn', eq:'Kp vs Kc'}
     ],
     Maths: [
-      {n:'sinÂ²x+cosÂ²x=1', eq:'Pythagorean ID'},{n:'âˆ«eË£ dx=eË£+C', eq:'Integration'},{n:'d/dx(sinx)=cosx', eq:'Derivative'},
-      {n:'x=(-bÂ±âˆšD)/2a', eq:'Quadratic Formula'},{n:'Sâ‚™=n/2(2a+(n-1)d)', eq:'AP Sum'},{n:'Sâ‚™=a(râ¿-1)/(r-1)', eq:'GP Sum'},
+      {n:'sin²x+cos²x=1', eq:'Pythagorean ID'},{n:'∫eˣ dx=eˣ+C', eq:'Integration'},{n:'d/dx(sinx)=cosx', eq:'Derivative'},
+      {n:'x=(-b±√D)/2a', eq:'Quadratic Formula'},{n:'Sₙ=n/2(2a+(n-1)d)', eq:'AP Sum'},{n:'Sₙ=a(rⁿ-1)/(r-1)', eq:'GP Sum'},
       {n:'log(mn)=logm+logn', eq:'Log Product'},{n:'tan(A+B)=(tanA+tanB)/(1-tanAtanB)', eq:'Tan Addition'},
-      {n:'C(n,r)=n!/(r!(n-r)!)', eq:'Combinations'},{n:'AÂ·B=|A||B|cosÎ¸', eq:'Dot Product'},
-      {n:'Area=Â½|xâ‚(yâ‚‚-yâ‚ƒ)+...|', eq:'Triangle Area'},{n:'lim(sinx/x)=1 as xâ†’0', eq:'Standard Limit'}
+      {n:'C(n,r)=n!/(r!(n-r)!)', eq:'Combinations'},{n:'A·B=|A||B|cosθ', eq:'Dot Product'},
+      {n:'Area=½|x₁(y₂-y₃)+...|', eq:'Triangle Area'},{n:'lim(sinx/x)=1 as x→0', eq:'Standard Limit'}
     ]
   };
   // Highlight active button
@@ -1274,15 +1276,15 @@ function showFormulas(subj) {
   list.innerHTML = (data[subj] || []).map((f, i) => {
     const key = `${subj}_${i}`;
     return `
-    <div onclick="selectFormulaForRecording('${key}', '${f.n} â€” ${f.eq.replace(/'/g, '')}')" style="background:var(--surface2);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;border:1px solid transparent;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'" title="Click to record audio for this formula">
+    <div onclick="selectFormulaForRecording('${key}', '${f.n} — ${f.eq.replace(/'/g, '')}')" style="background:var(--surface2);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;border:1px solid transparent;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'" title="Click to record audio for this formula">
       <div style="font-family:serif;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:6px;">${f.n}</div>
       <div style="font-size:0.7rem;color:var(--text-dim);">${f.eq}</div>
-      <div style="font-size:0.55rem;color:var(--text-muted);margin-top:6px;opacity:0.6;">ðŸŽ™ï¸ tap to record</div>
+      <div style="font-size:0.55rem;color:var(--text-muted);margin-top:6px;opacity:0.6;">🎙️ tap to record</div>
     </div>`;
   }).join('');
 }
 
-// â”€â”€ Verification & Stats â”€â”€
+// ── Verification & Stats ──
 function renderDashboard() {
   renderCountdown();
   renderPerformanceScore();
@@ -1328,26 +1330,15 @@ async function saveExamDates() {
   const adv = document.getElementById('advDate').value;
   if (!mains && !adv) return showToast('Please set at least one date.');
   if (!App.user) return;
-
-  // Optimistically update UI immediately
   App.examDates = { mains, adv };
   renderCountdown();
   closeExamModal();
-  showToast('ðŸ“… Exam dates saved!');
-
-  // Background sync â€” will not block UI even if it times out
-  try {
-    const result = await withTimeout(
-      _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv }),
-      10000
-    );
-    if (result === '__TIMEOUT__') {
-      console.warn('Exam dates save timed out - will retry on next login.');
-    }
-  } catch(e) {
-    console.error('Exam dates cloud sync failed:', e);
-  }
+  showToast('📅 Exam dates saved!');
+  _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates')
+    .set({ mains, adv })
+    .catch(e => console.warn('Exam dates sync failed:', e));
 }
+
 
 function renderPerformanceScore() {
   const now = new Date();
@@ -1530,7 +1521,7 @@ function renderHeatmap() {
   }
 }
 
-// â”€â”€ Native Calendar â”€â”€
+// ── Native Calendar ──
 let calDate = new Date();
 
 function calPrevMonth() { calDate.setMonth(calDate.getMonth() - 1); renderNativeCalendar(); }
@@ -1613,7 +1604,7 @@ function openCalDay(ds) {
   });
   const entries_ = Object.values(eventMap);
   if (!entries_.length) {
-    list.innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:24px;">â˜• No revisions scheduled.</p>';
+    list.innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:24px;">☕ No revisions scheduled.</p>';
     return;
   }
   const subjectColor = s => s === 'Physics' ? '#6366f1' : s === 'Chemistry' ? '#f59e0b' : s === 'Maths' ? '#10b981' : '#a855f7';
@@ -1622,14 +1613,14 @@ function openCalDay(ds) {
       <div style="width:4px;min-height:40px;border-radius:4px;background:${subjectColor(e.subject)};flex-shrink:0;"></div>
       <div style="flex:1; min-width:0;">
         <div class="topic-title-safe" style="font-weight:700;font-size:0.95rem;">${e.topic}</div>
-        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px;">${e.times.map(t => `${t.label} â€¢ ${t.time}`).join(' | ')}</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px;">${e.times.map(t => `${t.label} • ${t.time}`).join(' | ')}</div>
       </div>
-      <button onclick="deleteEntry('${e.id}')" style="background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer;">ðŸ—‘ï¸</button>
+      <button onclick="deleteEntry('${e.id}')" style="background:none;border:none;color:var(--red);font-size:1rem;cursor:pointer;">🗑️</button>
     </div>`).join('');
   panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// â”€â”€ Search / Log Utilities â”€â”€
+// ── Search / Log Utilities ──
 function filterLog() {
   const q = document.getElementById('searchInput')?.value?.trim() || '';
   App.searchQuery = q;
@@ -1651,8 +1642,8 @@ function updateTodayBadge() {
 }
 
 async function bulkNotifyToday() {
-  const pending = getTodayItems(true); // pendingOnly = true â†’ skip completed
-  if (!pending.length) { showToast('ðŸŽ‰ All done for today!'); return; }
+  const pending = getTodayItems(true); // pendingOnly = true → skip completed
+  if (!pending.length) { showToast('🎉 All done for today!'); return; }
   if (Notification.permission === 'denied') { showToast('Notifications are blocked in browser settings.'); return; }
   if (Notification.permission !== 'granted') {
     const result = await Notification.requestPermission();
@@ -1667,7 +1658,7 @@ async function bulkNotifyToday() {
       });
     }, idx * 150);
   });
-  showToast(`ðŸ”” Sent ${pending.length} pending reminder${pending.length > 1 ? 's' : ''}!`);
+  showToast(`🔔 Sent ${pending.length} pending reminder${pending.length > 1 ? 's' : ''}!`);
 }
 
 async function checkApproval() {
@@ -1676,10 +1667,10 @@ async function checkApproval() {
   try {
     const doc = await _db.collection('users').doc(App.user.uid).get();
     if (doc.exists && doc.data().status === 'approved') {
-      showToast('âœ… Account Approved!');
+      showToast('✅ Account Approved!');
       initApp();
     } else {
-      showToast('âŒ› Still pending. Please wait for admin approval.');
+      showToast('⌛ Still pending. Please wait for admin approval.');
     }
   } catch(e) { 
     console.error(e);
@@ -1687,10 +1678,10 @@ async function checkApproval() {
   }
 }
 
-// â”€â”€ Init â”€â”€
+// ── Init ──
 initBrandingSync();
 
-// â”€â”€ Utility Exports â”€â”€
+// ── Utility Exports ──
 window.doLogin = doLogin;
 window.doRegister = doRegister;
 window.doLogout = doLogout;
