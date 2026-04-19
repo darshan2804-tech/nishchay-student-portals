@@ -64,7 +64,12 @@ function initBrandingSync() {
   console.log('🔄 Initializing Branding Sync...');
   
   const applyBranding = (data) => {
-    const logoUrl = data.logo_url;
+    let logoUrl = data.logo_url;
+    // If Firestore has the old generic icon or is empty, use our new custom logo.svg
+    if (!logoUrl || logoUrl.includes('flaticon.com')) {
+      logoUrl = '/logo.svg'; 
+    }
+    
     if (logoUrl) {
       ['loginLogo', 'sidebarLogo', 'pendingLogo'].forEach(id => {
         const el = document.getElementById(id);
@@ -424,7 +429,7 @@ _auth.onAuthStateChanged(async user => {
     const vLabel = document.createElement('div');
     vLabel.id = 'debug-stamp';
     vLabel.style = 'position:fixed;bottom:10px;right:10px;font-size:10px;color:var(--text-dim);z-index:9999;background:var(--surface2);padding:4px 8px;border-radius:4px;border:1px solid var(--border);';
-    vLabel.innerHTML = `v10.3 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
+    vLabel.innerHTML = `v10.5 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
     document.body.appendChild(vLabel);
 
     window.forceUpdateSystem = async () => {
@@ -1782,7 +1787,7 @@ async function checkApproval() {
 
 // ── Init ──
 initBrandingSync();
-console.log('--- app.js v10.3 LOADED ---');
+console.log('--- app.js v10.5 LOADED ---');
 
 // ── Utility Exports ──
 window.doLogin = doLogin;
