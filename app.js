@@ -62,42 +62,41 @@ function showScreen(id) {
 // ── Branding Sync ──
 function initBrandingSync() {
   console.log('🔄 Initializing Branding Sync...');
-  _db.collection('settings').doc('branding').onSnapshot(doc => {
-    if (doc.exists) {
-      const data = doc.data();
-      const logoUrl = data.logo_url;
-      console.log('📦 Branding Data Received:', logoUrl ? `URL found (len: ${logoUrl.length})` : 'No URL');
-      
-      if (logoUrl) {
-        // IDs
-        ['loginLogo', 'sidebarLogo', 'pendingLogo'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.src = logoUrl;
-        });
-
-        // Classes
-        document.querySelectorAll('.app-logo, .nav-logo-img').forEach(el => el.src = logoUrl);
-        
-        document.querySelectorAll('.nav-logo-icon, .footer-logo').forEach(el => {
-          if (el.classList.contains('nav-logo-icon')) {
-            el.innerHTML = `<img src="${logoUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" />`;
-            el.style.background = 'transparent';
-            el.style.boxShadow = 'none';
-          }
-          if (el.classList.contains('footer-logo')) {
-            el.innerHTML = `<img src="${logoUrl}" style="height:24px; border-radius:4px;" /> Study Tracker`;
-          }
-        });
-      }
-      if (data.primary_color) {
-        document.documentElement.style.setProperty('--accent', data.primary_color);
-        document.documentElement.style.setProperty('--accent-glow', data.primary_color + '40');
-      }
-    } else {
-      console.warn('⚠️ Branding document not found in settings/branding');
+  
+  const applyBranding = (data) => {
+    const logoUrl = data.logo_url;
+    if (logoUrl) {
+      ['loginLogo', 'sidebarLogo', 'pendingLogo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.src = logoUrl;
+      });
+      document.querySelectorAll('.app-logo, .nav-logo-img').forEach(el => el.src = logoUrl);
+      document.querySelectorAll('.nav-logo-icon, .footer-logo').forEach(el => {
+        if (el.classList.contains('nav-logo-icon')) {
+          el.innerHTML = `<img src="${logoUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" />`;
+        }
+        if (el.classList.contains('footer-logo')) {
+          el.innerHTML = `<img src="${logoUrl}" style="height:24px; border-radius:4px;" /> Study Tracker`;
+        }
+      });
     }
+    if (data.primary_color) {
+      document.documentElement.style.setProperty('--accent', data.primary_color);
+    }
+  };
+
+  // 1. Snapshot Listener (Live)
+  _db.collection('settings').doc('branding').onSnapshot(doc => {
+    if (doc.exists) applyBranding(doc.data());
   }, err => {
-    console.error('❌ Branding Sync Error:', err);
+    console.error('Snapshot error:', err);
+    // 2. One-time fallback if listener fails
+    _db.collection('settings').doc('branding').get().then(doc => {
+      if (doc.exists) applyBranding(doc.data());
+    }).catch(e => {
+      // Physically alert the error so I can see it in your screenshot!
+      alert("❌ BRANDING ERROR: " + e.message);
+    });
   });
 }
 
@@ -381,7 +380,7 @@ _auth.onAuthStateChanged(async user => {
     const vLabel = document.createElement('div');
     vLabel.id = 'debug-stamp';
     vLabel.style = 'position:fixed;bottom:10px;right:10px;font-size:10px;color:var(--text-dim);z-index:9999;background:var(--surface2);padding:4px 8px;border-radius:4px;border:1px solid var(--border);';
-    vLabel.innerHTML = `v10.2 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
+    vLabel.innerHTML = `v10.3 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
     document.body.appendChild(vLabel);
 
     window.forceUpdateSystem = async () => {
@@ -1703,6 +1702,7 @@ async function checkApproval() {
 
 // ── Init ──
 initBrandingSync();
+console.log('--- app.js v10.3 LOADED ---');
 
 // ── Utility Exports ──
 window.doLogin = doLogin;
