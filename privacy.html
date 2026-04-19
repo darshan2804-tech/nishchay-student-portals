@@ -1,501 +1,124 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy - Study Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',sans-serif;background:#f8f9fc;color:#0f172a;line-height:1.75;}
-.header{background:linear-gradient(135deg,#0284c7,#0ea5e9);padding:44px 24px 36px;text-align:center;}
-.header h1{font-family:'Poppins',sans-serif;font-size:2rem;font-weight:700;color:#fff;margin-bottom:8px;}
-.header p{color:rgba(255,255,255,0.88);font-size:0.9rem;}
-.container{max-width:800px;margin:0 auto;padding:40px 24px 80px;}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:28px 32px;margin-bottom:20px;box-shadow:0 1px 6px rgba(0,0,0,0.06);}
-h2{font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:700;color:#0284c7;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #e0f2fe;}
-p{font-size:0.9rem;color:#475569;margin-bottom:12px;}
-ul,ol{padding-left:22px;margin-bottom:12px;}
-li{font-size:0.9rem;color:#475569;margin-bottom:7px;}
-strong{color:#0f172a;font-weight:600;}
-code{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:5px;padding:2px 7px;font-size:0.82rem;color:#0284c7;font-family:monospace;}
-.badge{display:inline-block;background:#e0f2fe;color:#0284c7;font-size:0.7rem;font-weight:700;border-radius:6px;padding:3px 9px;margin-left:8px;letter-spacing:0.04em;text-transform:uppercase;}
-.highlight{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 18px;margin-bottom:14px;}
-.highlight p{color:#15803d;margin:0;font-size:0.88rem;}
-.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 18px;margin-bottom:14px;}
-.warn p{color:#c2410c;margin:0;font-size:0.88rem;}
-.updated{text-align:center;font-size:0.8rem;color:#94a3b8;margin-top:40px;}
-a{color:#0ea5e9;text-decoration:none;}
-a:hover{text-decoration:underline;}
-.back-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-family:'Poppins',sans-serif;font-size:0.85rem;font-weight:600;margin-bottom:30px;}
-.back-btn:hover{opacity:0.9;text-decoration:none;}
-.toc{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin-bottom:28px;}
-.toc h3{font-family:'Poppins',sans-serif;font-size:0.85rem;font-weight:700;color:#475569;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em;}
-.toc ol{margin:0;padding-left:20px;}
-.toc li{margin-bottom:6px;}
-.toc a{font-size:0.85rem;color:#0284c7;font-weight:500;}
-.scope-table{width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:14px;}
-.scope-table th{background:#e0f2fe;color:#0284c7;font-size:0.8rem;font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid #bae6fd;}
-.scope-table td{font-size:0.85rem;color:#475569;padding:10px 14px;border-bottom:1px solid #f1f5f9;vertical-align:top;}
-.scope-table tr:last-child td{border-bottom:none;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - Study Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: #0f111a;
+      --surface: #1e1e2f;
+      --surface2: #2a2a40;
+      --text: #ffffff;
+      --text-muted: #a1a1aa;
+      --primary: #6366f1;
+      --green: #10b981;
+      --border: rgba(255,255,255,0.08);
+      --red: #ef4444;
+    }
+    body { background: var(--background); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px 80px; }
+    h1, h2, h3 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #fff; }
+    h1 { font-size: 2.2rem; text-align: center; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 40px; font-size: 0.9rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .card h2 { color: var(--primary); font-size: 1.3rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 20px; margin-bottom: 15px; }
+    li { color: var(--text-muted); margin-bottom: 8px; font-size: 0.95rem; }
+    p { color: var(--text-muted); margin-bottom: 15px; font-size: 0.95rem; }
+    strong { color: #fff; }
+    .badge { background: rgba(99, 102, 241, 0.15); color: var(--primary); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-left: 10px; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .highlight { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+    .highlight p { color: var(--green); margin: 0; }
+    .warn { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+    .warn p { color: var(--red); margin: 0; }
+    .btn-back { display: inline-flex; align-items: center; background: var(--surface2); color: #fff; padding: 10px 20px; border-radius: 10px; font-weight: 600; margin-bottom: 30px; border: 1px solid var(--border); transition: 0.2s; font-size: 0.9rem; }
+    .btn-back:hover { background: var(--primary); text-decoration: none; border-color: var(--primary); }
+    .toc { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+    .toc h3 { font-size: 0.9rem; color: #fff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .toc li { margin-bottom: 5px; }
+    .toc a { font-size: 0.9rem; color: var(--primary); }
+    code { font-family: monospace; background: var(--surface2); padding: 2px 6px; border-radius: 4px; color: #a5b4fc; }
+  </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>🔒 Privacy Policy</h1>
-  <p>Study Tracker &mdash; Spaced Repetition System &nbsp;|&nbsp; study-five-umber.vercel.app</p>
-</div>
-
 <div class="container">
-  <a href="/" class="back-btn">← Back to Study Tracker</a>
+  <h1>🔒 Privacy Policy</h1>
+  <p class="subtitle">Study Tracker &mdash; Spaced Repetition System</p>
+  
+  <a href="/" class="btn-back">← Back to Study Tracker</a>
 
   <div class="toc">
     <h3>Table of Contents</h3>
     <ol>
       <li><a href="#intro">Introduction</a></li>
       <li><a href="#info-collect">Information We Collect</a></li>
-      <li><a href="#google-api">Google API &amp; OAuth Data Use</a></li>
-      <li><a href="#how-use">How We Use Your Information</a></li>
-      <li><a href="#data-sharing">Data Sharing &amp; Disclosure</a></li>
-      <li><a href="#data-storage">Data Storage &amp; Security</a></li>
-      <li><a href="#retention">Data Retention &amp; Deletion</a></li>
-      <li><a href="#your-rights">Your Rights</a></li>
-      <li><a href="#cookies">Cookies &amp; Local Storage</a></li>
-      <li><a href="#children">Children's Privacy</a></li>
-      <li><a href="#third-party">Third-Party Services</a></li>
-      <li><a href="#changes">Changes to This Policy</a></li>
-      <li><a href="#contact">Contact Us</a></li>
+      <li><a href="#fraud">Fraud Prevention & Hardware Tracking</a></li>
+      <li><a href="#google-api">Google API & OAuth Data Use</a></li>
+      <li><a href="#data-sharing">Data Sharing & Disclosure</a></li>
+      <li><a href="#data-storage">Data Storage & Security</a></li>
     </ol>
   </div>
 
   <div class="card" id="intro">
     <h2>1. Introduction</h2>
-    <p>Welcome to <strong>Study Tracker</strong> ("we", "our", "us", or "the App"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use our web application at <strong>https://study-five-umber.vercel.app</strong>.</p>
-    <p>Study Tracker is operated by <strong>Darshan Derkar</strong> (contact: <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a>). By registering or using Study Tracker, you agree to the collection and use of information described in this policy.</p>
-    <p>If you do not agree with any part of this policy, please do not use the application.</p>
+    <p>Welcome to <strong>Study Tracker</strong>. This Privacy Policy explains how we collect, use, store, and protect your personal information when you use our web application.</p>
+    <p>By registering or using Study Tracker, you agree to the collection and use of information described in this policy, including our strict security measures for account sharing prevention.</p>
   </div>
 
   <div class="card" id="info-collect">
     <h2>2. Information We Collect</h2>
-    <p><strong>Account Information</strong> — collected when you register:</p>
+    <p><strong>Account Information (Registration):</strong></p>
     <ul>
-      <li>Full name</li>
-      <li>Email address</li>
-      <li>Phone number (used for admin contact during access approval only)</li>
-      <li>Password (hashed and managed securely by Firebase Authentication — we never see your plaintext password)</li>
+      <li>Full name, Email address, and Phone number.</li>
+      <li>All new registrations are placed in a <strong>pending queue</strong> and are manually verified by an administrator before access is granted.</li>
     </ul>
-    <p><strong>Study &amp; Usage Data</strong> — generated as you use the app:</p>
+    <p><strong>Study Data:</strong></p>
     <ul>
-      <li>Topics and chapters you log for study</li>
-      <li>Study session dates and times</li>
-      <li>Exam dates you configure (e.g. JEE Mains, JEE Advanced)</li>
-      <li>Daily study hours you record</li>
-      <li>Revision completion status and streaks</li>
+      <li>Topics, chapters, and revision logs generated as you use the spaced-repetition logic.</li>
     </ul>
-    <p><strong>Google Account Data (Optional)</strong> — only if you choose to connect Google Calendar:</p>
+  </div>
+
+  <div class="card" id="fraud">
+    <h2>3. Fraud Prevention & Hardware Tracking <span class="badge">Security Strict</span></h2>
+    <p>To protect the integrity of the platform and enforce fairness, we utilise advanced security tracking to prevent account sharing and unauthorized access:</p>
     <ul>
-      <li>Your Google account email address (displayed in the app to confirm which account is connected)</li>
-      <li>An OAuth access token that lets the app create calendar events — stored only in your browser's <code>localStorage</code> and never sent to our servers</li>
+      <li><strong>Hardware Fingerprinting:</strong> When you log in, we generate a unique cryptographic fingerprint of your physical device (based on your screen hardware, rendering engine, and system properties). This explicitly prevents circumventing the 2-device login limit via Incognito mode or clearing cookies.</li>
+      <li><strong>Network Geolocation (IP Tracking):</strong> We track the approximate geographic location (City and Country) of your active internet connection at the exact moment of login. This is displayed directly on the Administrator’s Live Dashboard.</li>
+      <li><strong>Suspicious Activity Flagging:</strong> If our system detects simultaneous active sessions across widely differing geographic locations (e.g., logging in from two different cities at the same time), your account is automatically flagged for Suspicious Credential Sharing in the Admin Panel, which may result in an immediate session kick or account revocation.</li>
+      <li><strong>Ghost Session Pruning:</strong> To ensure slots are not falsely consumed, our servers run automated cron jobs to purge abandoned sessions older than 12 hours.</li>
     </ul>
+    <div class="highlight">
+      <p>&#10003; <strong>Why we do this:</strong> These mechanisms are enforced entirely for abuse-prevention and enforcing the stated 2-device limit per student.</p>
+    </div>
   </div>
 
   <div class="card" id="google-api">
-    <h2>3. Google API &amp; OAuth Data Use <span class="badge">Key Section</span></h2>
-    <div class="highlight">
-      <p>&#10003; Study Tracker's use of information received from Google APIs strictly adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including the <strong>Limited Use</strong> requirements.</p>
-    </div>
-    <p><strong>OAuth Scopes We Request:</strong></p>
-    <table class="scope-table">
-      <thead>
-        <tr><th>Scope</th><th>Why We Need It</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>calendar.events</code></td>
-          <td>To create spaced-repetition revision reminder events directly in your Google Calendar when you request it. We do not read, modify, or delete your existing events.</td>
-        </tr>
-        <tr>
-          <td><code>openid / email</code> (userinfo)</td>
-          <td>To display your connected Google account email in the Calendar settings panel. No profile data is stored on our servers.</td>
-        </tr>
-      </tbody>
-    </table>
-    <p><strong>What we DO with your Google data:</strong></p>
+    <h2>4. Google API & OAuth Data Use</h2>
+    <p>If you optionally connect Google Calendar, we strictly adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>.</p>
     <ul>
-      <li>Create revision reminder calendar events according to the Ebbinghaus spaced-repetition schedule (Day 1, 3, 7, 14, 30, 60, 90)</li>
-      <li>Display your Google email in the app to confirm which account is connected</li>
+      <li><strong>Scope requested:</strong> <code>calendar.events</code>. Used exclusively to create spaced-repetition reminder events in your calendar.</li>
+      <li>We do <strong>not</strong> read your existing events. We do <strong>not</strong> store your OAuth access token on our servers (it remains entirely in your local browser storage).</li>
     </ul>
-    <p><strong>What we DO NOT do with your Google data:</strong></p>
-    <ul>
-      <li>&#10007; We do not read, access, or copy your existing Google Calendar events</li>
-      <li>&#10007; We do not store your Google OAuth token on our servers or in any database</li>
-      <li>&#10007; We do not share your Google account information with any third parties</li>
-      <li>&#10007; We do not use your Google data for advertising, profiling, or any purpose beyond the calendar feature</li>
-      <li>&#10007; We do not transfer your Google data to other apps or services</li>
-      <li>&#10007; We do not allow humans to read your Google data except as required by law</li>
-    </ul>
-    <div class="warn">
-      <p>&#9888; Your Google OAuth token is stored <strong>only in your browser's localStorage</strong>. It is never transmitted to our servers. You can revoke access at any time via <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account Permissions</a> or by tapping "Disconnect" inside the app.</p>
-    </div>
-  </div>
-
-  <div class="card" id="how-use">
-    <h2>4. How We Use Your Information</h2>
-    <p>We use the information we collect solely for the following purposes:</p>
-    <ul>
-      <li>To create and manage your Study Tracker account</li>
-      <li>To generate personalised spaced-repetition revision schedules</li>
-      <li>To sync your study data across your devices in real time</li>
-      <li>To create Google Calendar revision events (only when you explicitly request it)</li>
-
-      <li>To allow the administrator to review and approve account access requests</li>
-      <li>To improve the application's features and reliability</li>
-      <li>To respond to your support requests</li>
-    </ul>
-    <p>We do <strong>not</strong> use your data for advertising, marketing to third parties, or any purpose not listed above.</p>
   </div>
 
   <div class="card" id="data-sharing">
-    <h2>5. Data Sharing &amp; Disclosure</h2>
-    <p>We do not sell, rent, or trade your personal information to anyone.</p>
-    <p>Your data is only accessible to:</p>
-    <ul>
-      <li><strong>You</strong> (the account holder) — full access to your own data</li>
-      <li><strong>The app administrator</strong> (Darshan Derkar) — limited access for access-approval and technical support only</li>
-    </ul>
-    <p>We may disclose your information only if required by law, court order, or to protect the safety of users. Our infrastructure providers (Firebase, Vercel) process your data as sub-processors under their own privacy commitments — see <a href="#third-party">Section 11</a>.</p>
+    <h2>5. Data Sharing & Disclosure</h2>
+    <p>We do not sell, rent, or trade your personal information. Your data is accessible only by you and the system administrator. We utilise Google Firebase processing infrastructure to secure your data.</p>
   </div>
 
   <div class="card" id="data-storage">
-    <h2>6. Data Storage &amp; Security</h2>
-    <p>All study data and account information is stored in <strong>Google Firebase Firestore</strong>, a cloud database operated by Google LLC. Firebase employs AES-256 encryption at rest and TLS encryption in transit.</p>
-    <p>Authentication is handled by Firebase Authentication, which manages password hashing and session security. Google OAuth tokens are stored only in your browser's <code>localStorage</code> — never on our servers.</p>
-    <p>We encourage you to use a strong, unique password and to use the built-in Backup feature regularly.</p>
+    <h2>6. Data Retention & Account Deletion</h2>
+    <p>If your account is permanently revoked or deleted by an administrator, your active sessions are instantly terminated globally. If you wish to request total deletion of your analytics and study data, please email our support team directly. Revoked accounts may re-request access via the login portal.</p>
   </div>
+  
+  <p style="text-align:center; margin-top:30px; font-size:0.85rem;"><a href="/terms.html">View Terms of Service</a> &nbsp;|&nbsp; Last Updated: April 2026</p>
 
-  <div class="card" id="retention">
-    <h2>7. Data Retention &amp; Deletion</h2>
-    <p>We retain your data for as long as your account is active. To request deletion of your account and all associated data:</p>
-    <ul>
-      <li>Email <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a> with the subject <em>"Delete My Account"</em></li>
-      <li>We will permanently delete all your data from Firebase within <strong>30 days</strong> of your request and confirm via email</li>
-    </ul>
-    <p>Google Calendar events already created in your Google Calendar must be removed manually through Google Calendar, as those exist within Google's systems.</p>
-  </div>
-
-  <div class="card" id="your-rights">
-    <h2>8. Your Rights</h2>
-    <p>You have the right to:</p>
-    <ul>
-      <li><strong>Access</strong> — view all your personal data stored in the app</li>
-      <li><strong>Correct</strong> — update inaccurate information via your profile</li>
-      <li><strong>Delete</strong> — request permanent deletion of your account and data (see Section 7)</li>
-      <li><strong>Export</strong> — download your study data using the built-in Backup (JSON export)</li>
-      <li><strong>Revoke Google Access</strong> — disconnect Google Calendar via <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account Permissions</a> or in-app "Disconnect"</li>
-      <li><strong>Object</strong> — object to any processing you believe is unlawful</li>
-    </ul>
-    <p>To exercise any of these rights, contact us at <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a>.</p>
-  </div>
-
-  <div class="card" id="cookies">
-    <h2>9. Cookies &amp; Local Storage</h2>
-    <p>Study Tracker uses browser <strong>localStorage</strong> (not advertising cookies) to store:</p>
-    <ul>
-      <li>Your UI preferences (dark/light mode theme)</li>
-      <li>Cached study data for offline access</li>
-      <li>Your Google Calendar OAuth access token and expiry (on your device only)</li>
-      <li>Backup reminder dismissal state</li>
-    </ul>
-    <p>We do <strong>not</strong> use advertising cookies, cross-site tracking, or third-party analytics cookies. Firebase may set functional cookies for session management — see <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase Privacy Policy</a>.</p>
-  </div>
-
-  <div class="card" id="children">
-    <h2>10. Children's Privacy</h2>
-    <p>Study Tracker is designed for JEE aspirants (typically aged 16–18). We do not knowingly collect information from children under 13. If you are a parent or guardian and believe your child under 13 has registered, please contact us at <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a> and we will promptly delete such information.</p>
-  </div>
-
-  <div class="card" id="third-party">
-    <h2>11. Third-Party Services</h2>
-    <p>Study Tracker relies on the following third-party services, each with its own privacy policy:</p>
-    <ul>
-      <li><strong>Google Firebase (Auth &amp; Firestore)</strong> — Account management and database &nbsp;<a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
-      <li><strong>Google Calendar API</strong> — Creating revision events (with your explicit consent) &nbsp;<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
-      <li><strong>Google Fonts</strong> — Serving typefaces (IP address may be logged by Google) &nbsp;<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
-      <li><strong>Vercel</strong> — Web hosting &nbsp;<a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a></li>
-    </ul>
-  </div>
-
-  <div class="card" id="changes">
-    <h2>12. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy to reflect changes in our practices or applicable law. When we make significant changes, we will update the "Last Updated" date below. Continued use of Study Tracker after changes constitutes acceptance of the updated policy.</p>
-  </div>
-
-  <div class="card" id="contact">
-    <h2>13. Contact Us</h2>
-    <p>If you have questions about this Privacy Policy or wish to exercise your data rights, please contact:</p>
-    <ul>
-      <li><strong>Name:</strong> Darshan Derkar</li>
-      <li><strong>Email:</strong> <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a></li>
-      <li><strong>App:</strong> <a href="https://study-five-umber.vercel.app" target="_blank">study-five-umber.vercel.app</a></li>
-    </ul>
-    <p>We aim to respond within 5 business days.</p>
-  </div>
-
-  <p class="updated">Last Updated: March 23, 2026 &nbsp;&middot;&nbsp; <a href="/terms.html">Terms of Service</a></p>
 </div>
 
 </body>
 </html>
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy - Study Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',sans-serif;background:#f8f9fc;color:#0f172a;line-height:1.75;}
-.header{background:linear-gradient(135deg,#0284c7,#0ea5e9);padding:44px 24px 36px;text-align:center;}
-.header h1{font-family:'Poppins',sans-serif;font-size:2rem;font-weight:700;color:#fff;margin-bottom:8px;}
-.header p{color:rgba(255,255,255,0.88);font-size:0.9rem;}
-.container{max-width:800px;margin:0 auto;padding:40px 24px 80px;}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:28px 32px;margin-bottom:20px;box-shadow:0 1px 6px rgba(0,0,0,0.06);}
-h2{font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:700;color:#0284c7;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #e0f2fe;}
-p{font-size:0.9rem;color:#475569;margin-bottom:12px;}
-ul,ol{padding-left:22px;margin-bottom:12px;}
-li{font-size:0.9rem;color:#475569;margin-bottom:7px;}
-strong{color:#0f172a;font-weight:600;}
-code{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:5px;padding:2px 7px;font-size:0.82rem;color:#0284c7;font-family:monospace;}
-.badge{display:inline-block;background:#e0f2fe;color:#0284c7;font-size:0.7rem;font-weight:700;border-radius:6px;padding:3px 9px;margin-left:8px;letter-spacing:0.04em;text-transform:uppercase;}
-.highlight{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 18px;margin-bottom:14px;}
-.highlight p{color:#15803d;margin:0;font-size:0.88rem;}
-.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 18px;margin-bottom:14px;}
-.warn p{color:#c2410c;margin:0;font-size:0.88rem;}
-.updated{text-align:center;font-size:0.8rem;color:#94a3b8;margin-top:40px;}
-a{color:#0ea5e9;text-decoration:none;}
-a:hover{text-decoration:underline;}
-.back-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-family:'Poppins',sans-serif;font-size:0.85rem;font-weight:600;margin-bottom:30px;}
-.back-btn:hover{opacity:0.9;text-decoration:none;}
-.toc{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin-bottom:28px;}
-.toc h3{font-family:'Poppins',sans-serif;font-size:0.85rem;font-weight:700;color:#475569;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em;}
-.toc ol{margin:0;padding-left:20px;}
-.toc li{margin-bottom:6px;}
-.toc a{font-size:0.85rem;color:#0284c7;font-weight:500;}
-.scope-table{width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:14px;}
-.scope-table th{background:#e0f2fe;color:#0284c7;font-size:0.8rem;font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid #bae6fd;}
-.scope-table td{font-size:0.85rem;color:#475569;padding:10px 14px;border-bottom:1px solid #f1f5f9;vertical-align:top;}
-.scope-table tr:last-child td{border-bottom:none;}
-</style>
-</head>
-<body>
-
-<div class="header">
-  <h1>🔒 Privacy Policy</h1>
-  <p>Study Tracker &mdash; Spaced Repetition System &nbsp;|&nbsp; study-five-umber.vercel.app</p>
-</div>
-
-<div class="container">
-  <a href="/" class="back-btn">← Back to Study Tracker</a>
-
-  <div class="toc">
-    <h3>Table of Contents</h3>
-    <ol>
-      <li><a href="#intro">Introduction</a></li>
-      <li><a href="#info-collect">Information We Collect</a></li>
-      <li><a href="#google-api">Google API &amp; OAuth Data Use</a></li>
-      <li><a href="#how-use">How We Use Your Information</a></li>
-      <li><a href="#data-sharing">Data Sharing &amp; Disclosure</a></li>
-      <li><a href="#data-storage">Data Storage &amp; Security</a></li>
-      <li><a href="#retention">Data Retention &amp; Deletion</a></li>
-      <li><a href="#your-rights">Your Rights</a></li>
-      <li><a href="#cookies">Cookies &amp; Local Storage</a></li>
-      <li><a href="#children">Children's Privacy</a></li>
-      <li><a href="#third-party">Third-Party Services</a></li>
-      <li><a href="#changes">Changes to This Policy</a></li>
-      <li><a href="#contact">Contact Us</a></li>
-    </ol>
-  </div>
-
-  <div class="card" id="intro">
-    <h2>1. Introduction</h2>
-    <p>Welcome to <strong>Study Tracker</strong> ("we", "our", "us", or "the App"). This Privacy Policy explains how we collect, use, store, and protect your personal information when you use our web application at <strong>https://study-five-umber.vercel.app</strong>.</p>
-    <p>Study Tracker is operated by <strong>Darshan Derkar</strong> (contact: <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a>). By registering or using Study Tracker, you agree to the collection and use of information described in this policy.</p>
-    <p>If you do not agree with any part of this policy, please do not use the application.</p>
-  </div>
-
-  <div class="card" id="info-collect">
-    <h2>2. Information We Collect</h2>
-    <p><strong>Account Information</strong> — collected when you register:</p>
-    <ul>
-      <li>Full name</li>
-      <li>Email address</li>
-      <li>Phone number (used for admin contact during access approval only)</li>
-      <li>Password (hashed and managed securely by Firebase Authentication — we never see your plaintext password)</li>
-    </ul>
-    <p><strong>Study &amp; Usage Data</strong> — generated as you use the app:</p>
-    <ul>
-      <li>Topics and chapters you log for study</li>
-      <li>Study session dates and times</li>
-      <li>Exam dates you configure (e.g. JEE Mains, JEE Advanced)</li>
-      <li>Daily study hours you record</li>
-      <li>Revision completion status and streaks</li>
-    </ul>
-    <p><strong>Google Account Data (Optional)</strong> — only if you choose to connect Google Calendar:</p>
-    <ul>
-      <li>Your Google account email address (displayed in the app to confirm which account is connected)</li>
-      <li>An OAuth access token that lets the app create calendar events — stored only in your browser's <code>localStorage</code> and never sent to our servers</li>
-    </ul>
-  </div>
-
-  <div class="card" id="google-api">
-    <h2>3. Google API &amp; OAuth Data Use <span class="badge">Key Section</span></h2>
-    <div class="highlight">
-      <p>&#10003; Study Tracker's use of information received from Google APIs strictly adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including the <strong>Limited Use</strong> requirements.</p>
-    </div>
-    <p><strong>OAuth Scopes We Request:</strong></p>
-    <table class="scope-table">
-      <thead>
-        <tr><th>Scope</th><th>Why We Need It</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>calendar.events</code></td>
-          <td>To create spaced-repetition revision reminder events directly in your Google Calendar when you request it. We do not read, modify, or delete your existing events.</td>
-        </tr>
-        <tr>
-          <td><code>openid / email</code> (userinfo)</td>
-          <td>To display your connected Google account email in the Calendar settings panel. No profile data is stored on our servers.</td>
-        </tr>
-      </tbody>
-    </table>
-    <p><strong>What we DO with your Google data:</strong></p>
-    <ul>
-      <li>Create revision reminder calendar events according to the Ebbinghaus spaced-repetition schedule (Day 1, 3, 7, 14, 30, 60, 90)</li>
-      <li>Display your Google email in the app to confirm which account is connected</li>
-    </ul>
-    <p><strong>What we DO NOT do with your Google data:</strong></p>
-    <ul>
-      <li>&#10007; We do not read, access, or copy your existing Google Calendar events</li>
-      <li>&#10007; We do not store your Google OAuth token on our servers or in any database</li>
-      <li>&#10007; We do not share your Google account information with any third parties</li>
-      <li>&#10007; We do not use your Google data for advertising, profiling, or any purpose beyond the calendar feature</li>
-      <li>&#10007; We do not transfer your Google data to other apps or services</li>
-      <li>&#10007; We do not allow humans to read your Google data except as required by law</li>
-    </ul>
-    <div class="warn">
-      <p>&#9888; Your Google OAuth token is stored <strong>only in your browser's localStorage</strong>. It is never transmitted to our servers. You can revoke access at any time via <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account Permissions</a> or by tapping "Disconnect" inside the app.</p>
-    </div>
-  </div>
-
-  <div class="card" id="how-use">
-    <h2>4. How We Use Your Information</h2>
-    <p>We use the information we collect solely for the following purposes:</p>
-    <ul>
-      <li>To create and manage your Study Tracker account</li>
-      <li>To generate personalised spaced-repetition revision schedules</li>
-      <li>To sync your study data across your devices in real time</li>
-      <li>To create Google Calendar revision events (only when you explicitly request it)</li>
-
-      <li>To allow the administrator to review and approve account access requests</li>
-      <li>To improve the application's features and reliability</li>
-      <li>To respond to your support requests</li>
-    </ul>
-    <p>We do <strong>not</strong> use your data for advertising, marketing to third parties, or any purpose not listed above.</p>
-  </div>
-
-  <div class="card" id="data-sharing">
-    <h2>5. Data Sharing &amp; Disclosure</h2>
-    <p>We do not sell, rent, or trade your personal information to anyone.</p>
-    <p>Your data is only accessible to:</p>
-    <ul>
-      <li><strong>You</strong> (the account holder) — full access to your own data</li>
-      <li><strong>The app administrator</strong> (Darshan Derkar) — limited access for access-approval and technical support only</li>
-    </ul>
-    <p>We may disclose your information only if required by law, court order, or to protect the safety of users. Our infrastructure providers (Firebase, Vercel) process your data as sub-processors under their own privacy commitments — see <a href="#third-party">Section 11</a>.</p>
-  </div>
-
-  <div class="card" id="data-storage">
-    <h2>6. Data Storage &amp; Security</h2>
-    <p>All study data and account information is stored in <strong>Google Firebase Firestore</strong>, a cloud database operated by Google LLC. Firebase employs AES-256 encryption at rest and TLS encryption in transit.</p>
-    <p>Authentication is handled by Firebase Authentication, which manages password hashing and session security. Google OAuth tokens are stored only in your browser's <code>localStorage</code> — never on our servers.</p>
-    <p>We encourage you to use a strong, unique password and to use the built-in Backup feature regularly.</p>
-  </div>
-
-  <div class="card" id="retention">
-    <h2>7. Data Retention &amp; Deletion</h2>
-    <p>We retain your data for as long as your account is active. To request deletion of your account and all associated data:</p>
-    <ul>
-      <li>Email <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a> with the subject <em>"Delete My Account"</em></li>
-      <li>We will permanently delete all your data from Firebase within <strong>30 days</strong> of your request and confirm via email</li>
-    </ul>
-    <p>Google Calendar events already created in your Google Calendar must be removed manually through Google Calendar, as those exist within Google's systems.</p>
-  </div>
-
-  <div class="card" id="your-rights">
-    <h2>8. Your Rights</h2>
-    <p>You have the right to:</p>
-    <ul>
-      <li><strong>Access</strong> — view all your personal data stored in the app</li>
-      <li><strong>Correct</strong> — update inaccurate information via your profile</li>
-      <li><strong>Delete</strong> — request permanent deletion of your account and data (see Section 7)</li>
-      <li><strong>Export</strong> — download your study data using the built-in Backup (JSON export)</li>
-      <li><strong>Revoke Google Access</strong> — disconnect Google Calendar via <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account Permissions</a> or in-app "Disconnect"</li>
-      <li><strong>Object</strong> — object to any processing you believe is unlawful</li>
-    </ul>
-    <p>To exercise any of these rights, contact us at <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a>.</p>
-  </div>
-
-  <div class="card" id="cookies">
-    <h2>9. Cookies &amp; Local Storage</h2>
-    <p>Study Tracker uses browser <strong>localStorage</strong> (not advertising cookies) to store:</p>
-    <ul>
-      <li>Your UI preferences (dark/light mode theme)</li>
-      <li>Cached study data for offline access</li>
-      <li>Your Google Calendar OAuth access token and expiry (on your device only)</li>
-      <li>Backup reminder dismissal state</li>
-    </ul>
-    <p>We do <strong>not</strong> use advertising cookies, cross-site tracking, or third-party analytics cookies. Firebase may set functional cookies for session management — see <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase Privacy Policy</a>.</p>
-  </div>
-
-  <div class="card" id="children">
-    <h2>10. Children's Privacy</h2>
-    <p>Study Tracker is designed for JEE aspirants (typically aged 16–18). We do not knowingly collect information from children under 13. If you are a parent or guardian and believe your child under 13 has registered, please contact us at <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a> and we will promptly delete such information.</p>
-  </div>
-
-  <div class="card" id="third-party">
-    <h2>11. Third-Party Services</h2>
-    <p>Study Tracker relies on the following third-party services, each with its own privacy policy:</p>
-    <ul>
-      <li><strong>Google Firebase (Auth &amp; Firestore)</strong> — Account management and database &nbsp;<a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
-      <li><strong>Google Calendar API</strong> — Creating revision events (with your explicit consent) &nbsp;<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
-      <li><strong>Google Fonts</strong> — Serving typefaces (IP address may be logged by Google) &nbsp;<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
-      <li><strong>Vercel</strong> — Web hosting &nbsp;<a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a></li>
-    </ul>
-  </div>
-
-  <div class="card" id="changes">
-    <h2>12. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy to reflect changes in our practices or applicable law. When we make significant changes, we will update the "Last Updated" date below. Continued use of Study Tracker after changes constitutes acceptance of the updated policy.</p>
-  </div>
-
-  <div class="card" id="contact">
-    <h2>13. Contact Us</h2>
-    <p>If you have questions about this Privacy Policy or wish to exercise your data rights, please contact:</p>
-    <ul>
-      <li><strong>Name:</strong> Darshan Derkar</li>
-      <li><strong>Email:</strong> <a href="mailto:darshanderkar20@gmail.com">darshanderkar20@gmail.com</a></li>
-      <li><strong>App:</strong> <a href="https://study-five-umber.vercel.app" target="_blank">study-five-umber.vercel.app</a></li>
-    </ul>
-    <p>We aim to respond within 5 business days.</p>
-  </div>
-
-  <p class="updated">Last Updated: March 23, 2026 &nbsp;&middot;&nbsp; <a href="/terms.html">Terms of Service</a></p>
-</div>
-
-</body>
-</html>
->>>>>>> 479b264a99696b1d96e82d83e3635a577edda720
