@@ -1,10 +1,10 @@
 {
   "name": "Study Tracker",
   "short_name": "Study Tracker",
-  "start_url": "/app.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#050816",
-  "theme_color": "#0ea5e9",
+  "theme_color": "#6366f1",
   "orientation": "portrait",
   "icons": [
     {
