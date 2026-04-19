@@ -299,8 +299,10 @@ async function _registerSession(user) {
 }
 
 // ── Auth State Handler ──
+_auth.onAuthStateChanged(async user => {
   // Debug: Log current user email for rule verification
   console.log('[DEBUG] Auth state changed. User:', user ? user.email : 'None');
+  loadTheme();
   if (!user) {
     // Clean up
     _sessionRegistered = false;
