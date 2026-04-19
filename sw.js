@@ -1,7 +1,7 @@
-const CACHE_NAME = 'studytracker-v6';
+const CACHE_NAME = 'studytracker-v10.1';
 const STATIC_ASSETS = [
   '/app.html',
-  '/app.css',
+  '/app.css?v=10.1',
   '/app.js',
   '/manifest.json',
   '/icon-192.png',
