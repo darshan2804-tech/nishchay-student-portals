@@ -185,26 +185,52 @@ function setupGlobalListeners() {
 }
 
 
-// ── Device Fingerprint (bypass-proof) ──
+// ── Device Fingerprint (bypass-proof, Strict Mode) ──
+let _cachedFingerprint = null;
 function _getDeviceId() {
-  // Use BOTH localStorage and sessionStorage so clearing one doesn't bypass
-  let id = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
-  const sessId = sessionStorage.getItem('STUDY_TRACKER_DEVICE_ID');
-  if (sessId && !id) {
-    // User cleared localStorage but sessionStorage still has it
-    id = sessId;
-    localStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
+  if (_cachedFingerprint) return _cachedFingerprint;
+  
+  try {
+    // Generate Hardware/Browser Canvas Fingerprint
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = "top";
+    ctx.font = "14px 'Arial'";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#f60";
+    ctx.fillRect(125,1,62,20);
+    ctx.fillStyle = "#069";
+    ctx.fillText("StudyTracker!~*", 2, 15);
+    ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+    ctx.fillText("StudyTracker!~*", 4, 17);
+    
+    const hash = canvas.toDataURL();
+    let fp = 0;
+    for (let i = 0; i < hash.length; i++) {
+      fp = ((fp << 5) - fp) + hash.charCodeAt(i);
+      fp |= 0;
+    }
+    
+    // Combine with Screen & Timezone
+    const scr = window.screen.width + 'x' + window.screen.height + 'x' + window.screen.colorDepth;
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown';
+    
+    const rawFp = fp + '|' + scr + '|' + tz;
+    _cachedFingerprint = 'fp_' + btoa(rawFp).replace(/[=/]/g, '');
+    
+    // Save to local storage for standard persistence
+    localStorage.setItem('STUDY_TRACKER_DEVICE_ID', _cachedFingerprint);
+    return _cachedFingerprint;
+  } catch(e) {
+    // Extreme fallback if Canvas is completely blocked
+    let id = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
+    if (!id) {
+       id = 'dev_' + Math.random().toString(36).substring(2, 12);
+       localStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
+    }
+    _cachedFingerprint = id;
+    return id;
   }
-  if (!id) {
-    // Generate a new device fingerprint
-    id = 'dev_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
-    localStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
-    sessionStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
-  } else {
-    // Keep sessionStorage in sync
-    sessionStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
-  }
-  return id;
 }
 
 function _parseDeviceName(ua) {
@@ -286,12 +312,23 @@ async function _registerSession(user) {
       }
     }
 
-    // Step 5: Register this device
+    // Step 5: Fetch Geolocation & Register this device
+    let locationStr = 'Unknown Location';
+    try {
+      // Use ipapi to get location context without exposing raw IP unless needed
+      const resp = await fetch('https://ipapi.co/json/');
+      if (resp.ok) {
+        const ipd = await resp.json();
+        if (ipd.city) locationStr = `${ipd.city}, ${ipd.country_name || ipd.country}`;
+      }
+    } catch(e) { console.warn('Geolocation blocked or failed.'); }
+
     updatePayload[`sessions.${deviceId}`] = {
       lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
       userAgent: navigator.userAgent,
       platform: navigator.platform || 'unknown',
-      deviceName: _parseDeviceName(navigator.userAgent)
+      deviceName: _parseDeviceName(navigator.userAgent),
+      location: locationStr
     };
 
     await userRef.update(updatePayload);
