@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <linearGradient id="barIndigo" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+    <linearGradient id="barEmerald" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <filter id="emeraldGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#10b981" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="500" height="500" fill="#0f111a" rx="110"/>
+  <circle cx="250" cy="250" r="168" fill="none" stroke="#1e2235" stroke-width="32"/>
+  <circle cx="250" cy="250" r="168" fill="none" stroke="#4f46e5" stroke-width="32" stroke-linecap="round" stroke-dasharray="630 426" stroke-dashoffset="185" opacity="0.9"/>
+  <circle cx="250" cy="250" r="168" fill="none" stroke="#10b981" stroke-width="32" stroke-linecap="round" stroke-dasharray="230 826" stroke-dashoffset="-140" filter="url(#emeraldGlow)"/>
+
+  <rect x="168" y="300" width="42" height="68" rx="10" fill="url(#barIndigo)" opacity="0.85"/>
+  <rect x="229" y="248" width="42" height="120" rx="10" fill="url(#barIndigo)"/>
+  <rect x="290" y="178" width="42" height="190" rx="10" fill="url(#barEmerald)" filter="url(#emeraldGlow)"/>
+  <rect x="155" y="371" width="192" height="5" rx="2.5" fill="#2d3158"/>
+  <circle cx="311" cy="172" r="9" fill="#34d399" filter="url(#emeraldGlow)"/>
+</svg>
