@@ -110,11 +110,21 @@ async function doRegister() {
   } catch(e) { showToast(e.message); }
 }
 
-function doLogout() {
+async function doLogout() {
   if (!confirm('Are you sure you want to sign out?')) return;
+  // Remove this device's session from Firestore BEFORE signing out
+  try {
+    const user = _auth.currentUser;
+    const deviceId = _getDeviceId();
+    if (user && deviceId) {
+      const delUpdate = {};
+      delUpdate[`sessions.${deviceId}`] = firebase.firestore.FieldValue.delete();
+      await _db.collection('users').doc(user.uid).update(delUpdate);
+    }
+  } catch(e) { console.warn('Session cleanup on logout failed:', e); }
   sessionStorage.removeItem('sh_email');
   sessionStorage.removeItem('sh_pass');
-  _auth.signOut();
+  await _auth.signOut();
   window.location.reload();
 }
 
@@ -145,92 +155,228 @@ function setupGlobalListeners() {
 }
 
 
-// ── Auth Logic ──
+// ── Device Fingerprint (bypass-proof) ──
+function _getDeviceId() {
+  // Use BOTH localStorage and sessionStorage so clearing one doesn't bypass
+  let id = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
+  const sessId = sessionStorage.getItem('STUDY_TRACKER_DEVICE_ID');
+  if (sessId && !id) {
+    // User cleared localStorage but sessionStorage still has it
+    id = sessId;
+    localStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
+  }
+  if (!id) {
+    // Generate a new device fingerprint
+    id = 'dev_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
+    localStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
+    sessionStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
+  } else {
+    // Keep sessionStorage in sync
+    sessionStorage.setItem('STUDY_TRACKER_DEVICE_ID', id);
+  }
+  return id;
+}
 
+function _parseDeviceName(ua) {
+  if (!ua) return 'Unknown';
+  if (/Android/i.test(ua)) return 'Android Device';
+  if (/iPhone/i.test(ua)) return 'iPhone';
+  if (/iPad/i.test(ua))   return 'iPad';
+  if (/Windows/i.test(ua)) return 'Windows PC';
+  if (/Mac/i.test(ua))    return 'MacBook/Mac';
+  if (/Linux/i.test(ua))  return 'Linux PC';
+  return 'Browser';
+}
+
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+let _sessionRegistered = false; // Guard: only register session once per page load
+let _heartbeatTimer = null;
+
+/**
+ * Register this device's session. Called ONCE after auth + approval check.
+ * Returns true if allowed, false if blocked.
+ */
+async function _registerSession(user) {
+  const deviceId = _getDeviceId();
+  const userRef = _db.collection('users').doc(user.uid);
+  
+  try {
+    const doc = await userRef.get();
+    if (!doc.exists) return false;
+    const data = doc.data();
+    const currentSessions = data.sessions || {};
+    const now = Date.now();
+
+    // Step 1: Identify stale sessions (>12h old)
+    const staleIds = [];
+    const activeIds = [];
+    Object.keys(currentSessions).forEach(sid => {
+      const s = currentSessions[sid];
+      if (!s.lastSeen) { staleIds.push(sid); return; }
+      const lastSeen = s.lastSeen.toDate ? s.lastSeen.toDate() : new Date(s.lastSeen);
+      if (now - lastSeen.getTime() > SESSION_TTL_MS) {
+        staleIds.push(sid);
+      } else {
+        activeIds.push(sid);
+      }
+    });
+
+    // Step 2: Build the update — prune stale sessions
+    const updatePayload = {};
+    staleIds.forEach(sid => {
+      updatePayload[`sessions.${sid}`] = firebase.firestore.FieldValue.delete();
+    });
+
+    // Step 3: Check if this device is already registered
+    const isAlreadyIn = activeIds.includes(deviceId);
+    const activeCountExcludingSelf = isAlreadyIn
+      ? activeIds.length - 1
+      : activeIds.length;
+
+    // Step 4: Block if too many active sessions
+    if (!isAlreadyIn && activeCountExcludingSelf >= MAX_SESSIONS) {
+      // Still prune stale sessions even if blocked
+      if (Object.keys(updatePayload).length > 0) {
+        await userRef.update(updatePayload).catch(() => {});
+      }
+      // Re-check after pruning
+      const recheck = await userRef.get();
+      const recheckSessions = recheck.data()?.sessions || {};
+      const recheckActive = Object.keys(recheckSessions).filter(sid => {
+        const s = recheckSessions[sid];
+        if (!s.lastSeen) return false;
+        const ls = s.lastSeen.toDate ? s.lastSeen.toDate() : new Date(s.lastSeen);
+        return now - ls.getTime() < SESSION_TTL_MS;
+      });
+      if (recheckActive.length >= MAX_SESSIONS) {
+        console.warn(`[Session] BLOCKED — ${recheckActive.length} active sessions, max ${MAX_SESSIONS}`);
+        alert(`⛔ ACCESS DENIED\n\nYou are already logged in on ${recheckActive.length} device(s).\nMaximum allowed: ${MAX_SESSIONS}\n\nPlease log out from another device first, or ask the admin to revoke a session.`);
+        await _auth.signOut();
+        return false;
+      }
+    }
+
+    // Step 5: Register this device
+    updatePayload[`sessions.${deviceId}`] = {
+      lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+      userAgent: navigator.userAgent,
+      platform: navigator.platform || 'unknown',
+      deviceName: _parseDeviceName(navigator.userAgent)
+    };
+
+    await userRef.update(updatePayload);
+    console.log(`[Session] Registered device ${deviceId}`);
+    _sessionRegistered = true;
+
+    // Step 6: Start a heartbeat to keep the session alive (every 5 min)
+    if (_heartbeatTimer) clearInterval(_heartbeatTimer);
+    _heartbeatTimer = setInterval(async () => {
+      try {
+        const hb = {};
+        hb[`sessions.${deviceId}.lastSeen`] = firebase.firestore.FieldValue.serverTimestamp();
+        await userRef.update(hb);
+      } catch(e) {
+        // If permission-denied, admin revoked us
+        if (e.code === 'permission-denied') {
+          clearInterval(_heartbeatTimer);
+          alert('⛔ Your session was revoked by the admin. Logging out...');
+          await _auth.signOut();
+          window.location.reload();
+        }
+      }
+    }, 5 * 60 * 1000);
+
+    return true;
+  } catch(err) {
+    if (err.code === 'permission-denied') {
+      alert('⛔ Firestore blocked this login (session limit enforced by rules). Logging out...');
+      await _auth.signOut();
+      return false;
+    }
+    console.error('[Session] Registration error:', err);
+    return true; // Allow on transient errors to avoid lockout
+  }
+}
+
+// ── Auth State Handler ──
 _auth.onAuthStateChanged(async user => {
   loadTheme();
   if (!user) {
-    // Clean up any previous listeners
+    // Clean up
+    _sessionRegistered = false;
+    if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
     App._unsubs.forEach(unsub => unsub());
     App._unsubs = [];
     return showScreen('authScreen');
   }
   App.user = user;
-  
-  // Real-time listener for user status
-  const unsubStatus = _db.collection('users').doc(user.uid)
-    .onSnapshot(async doc => {
-      if (doc.exists) {
-        const data = doc.data();
-        
-        // ── Session Restriction (Strict Bypass-Proof Enforcement) v5.1 ──
-        let deviceId = localStorage.getItem('STUDY_TRACKER_DEVICE_ID');
-        if (!deviceId) {
-          deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-          localStorage.setItem('STUDY_TRACKER_DEVICE_ID', deviceId);
-        }
 
-        const currentSessions = data.sessions || {};
-        const activeSessIds = Object.keys(currentSessions).filter(id => {
-          const s = currentSessions[id];
-          if (!s.lastSeen) return true;
-          const lastSeen = s.lastSeen.toDate();
-          return (Date.now() - lastSeen.getTime() < 12 * 60 * 60 * 1000);
-        });
+  // One-time check: get user doc, verify approval, register session
+  try {
+    const doc = await _db.collection('users').doc(user.uid).get();
+    if (!doc.exists) {
+      showScreen('pendingScreen');
+      return;
+    }
+    const data = doc.data();
+    const isAdmin = ADMIN_EMAILS.includes(user.email);
 
-        console.log(`[Session Check] Device: ${deviceId}, Active Count: ${activeSessIds.length}`);
+    // Auto-approve admins
+    if (isAdmin && data.status !== 'approved') {
+      await _db.collection('users').doc(user.uid).set({ status: 'approved' }, { merge: true });
+    }
 
-        if (!currentSessions[deviceId] && activeSessIds.length >= MAX_SESSIONS) {
-          console.warn("Max sessions reached. Blocking access.");
-          alert(`⛔ ACCESS DENIED (v5.1)\n\nLimit Reached: You are already logged in on ${activeSessIds.length} other devices.\n\nPlease log out from your other devices first.`);
+    if (data.status !== 'approved' && !isAdmin) {
+      showScreen('pendingScreen');
+      return;
+    }
+
+    // Register session (admins are exempt from limit)
+    if (!isAdmin && !_sessionRegistered) {
+      const allowed = await _registerSession(user);
+      if (!allowed) return;
+    }
+
+    // Update login metadata
+    _db.collection('users').doc(user.uid).set({
+      lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+      lastDevice: navigator.userAgent,
+      loginCount: firebase.firestore.FieldValue.increment(1)
+    }, { merge: true }).catch(() => {});
+
+    // Init the app
+    initApp();
+
+    // Real-time listener for admin revocations (status or session kicks)
+    const unsubStatus = _db.collection('users').doc(user.uid)
+      .onSnapshot(snap => {
+        if (!snap.exists) return;
+        const liveData = snap.data();
+
+        // If status was revoked, force logout
+        if (liveData.status !== 'approved' && !isAdmin) {
+          alert('⛔ Your access has been revoked by the admin.');
           _auth.signOut();
+          window.location.reload();
           return;
         }
 
-        const sessionUpdate = {};
-        sessionUpdate[`sessions.${deviceId}`] = {
-          lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-          userAgent: navigator.userAgent,
-          platform: navigator.platform,
-          deviceName: parseDeviceName(navigator.userAgent)
-        };
-
-        _db.collection('users').doc(user.uid).update(sessionUpdate).catch(err => {
-           if (err.code === 'permission-denied') {
-             alert("⛔ DATABASE BLOCKED (v5.1)\n\nFirestore Rule rejected 3rd login. Logging out...");
-             _auth.signOut();
-           }
-        });
-
-        function parseDeviceName(ua) {
-          if (/Android/i.test(ua)) return 'Android Device';
-          if (/iPhone|iPad/i.test(ua)) return 'iOS Device';
-          if (/Windows/i.test(ua)) return 'Windows PC';
-          if (/Mac/i.test(ua)) return 'MacBook/Mac';
-          return 'Browser';
+        // If our session was removed by admin, force logout
+        const deviceId = _getDeviceId();
+        const sessions = liveData.sessions || {};
+        if (_sessionRegistered && !isAdmin && !sessions[deviceId]) {
+          alert('⛔ Your session on this device was revoked by the admin. Logging out...');
+          _sessionRegistered = false;
+          if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
+          _auth.signOut();
+          window.location.reload();
         }
-
-        if (data.status === 'approved' || ADMIN_EMAILS.includes(user.email)) {
-          if (data.status !== 'approved') {
-            _db.collection('users').doc(user.uid).set({ status: 'approved' }, { merge: true });
-          }
-          // Only init if not already on app screen
-          if (document.getElementById('appScreen').style.display !== 'flex') {
-            _db.collection('users').doc(user.uid).set({
-              lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-              lastDevice: navigator.userAgent,
-              loginCount: firebase.firestore.FieldValue.increment(1)
-            }, { merge: true }).catch(() => {});
-            initApp();
-          }
-        } else {
-          showScreen('pendingScreen');
-        }
-      } else {
-        showScreen('pendingScreen');
-      }
-    });
-  App._unsubs.push(unsubStatus);
+      });
+    App._unsubs.push(unsubStatus);
+  } catch(e) {
+    console.error('Auth state handler error:', e);
+    showScreen('pendingScreen');
+  }
 });
 
 // ── App Core ──
@@ -1530,7 +1676,7 @@ window.deleteMistake = deleteMistake;
 window.showFormulas = showFormulas;
 window.openMistakeForm = () => document.getElementById('mistakeModal').classList.add('active');
 window.closeMistakeForm = () => document.getElementById('mistakeModal').classList.remove('active');
-window.p(0); // init padding helper
+// window.p removed (was incorrectly calling padding helper)
 window.setPomoMode = setPomoMode;
 window.startPomo = startPomo;
 window.addPomoTime = addPomoTime;

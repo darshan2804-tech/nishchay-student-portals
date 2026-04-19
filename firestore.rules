@@ -17,15 +17,19 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && (
         (request.auth.uid == userId && (
-          // ONLY ALLOW UPDATE IF SESSIONS <= 2
-          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['sessions']) || 
-           request.resource.data.sessions.size() <= 2)
+          // Allow update if NOT touching sessions at all
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['sessions']) ||
+          // OR if touching sessions: new sessions map must have <= 2 entries
+          // (This covers both adding a session and removing one for logout)
+          !('sessions' in request.resource.data) ||
+          request.resource.data.sessions.size() <= 2
         )) ||
+        // Admin bypass — full write access
         request.auth.token.email == "darshanderkar20@gmail.com" ||
         request.auth.token.email == "derkardarshan@gmail.com"
       );
+      // Only admins can delete user documents
       allow delete: if request.auth != null && (
-        request.auth.uid == userId ||
         request.auth.token.email == "darshanderkar20@gmail.com" ||
         request.auth.token.email == "derkardarshan@gmail.com"
       );
