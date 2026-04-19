@@ -31,8 +31,36 @@ module.exports = async (req, res) => {
     // 1. Fetch all users who have web push subscriptions
     const usersSnap = await db.collection('users').get();
     
+    const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+
     for (const userDoc of usersSnap.docs) {
       const userData = userDoc.data();
+      let hasUpdates = false;
+      const updatePayload = {};
+
+      // --- 0. GHOST SESSION CLEANUP ---
+      if (userData.sessions) {
+        Object.keys(userData.sessions).forEach(sid => {
+          const s = userData.sessions[sid];
+          if (!s.lastSeen) {
+             updatePayload[`sessions.${sid}`] = admin.firestore.FieldValue.delete();
+             hasUpdates = true;
+          } else {
+             const lastSeen = s.lastSeen.toDate ? s.lastSeen.toDate() : new Date(s.lastSeen);
+             if (now.getTime() - lastSeen.getTime() > SESSION_TTL_MS) {
+               updatePayload[`sessions.${sid}`] = admin.firestore.FieldValue.delete();
+               hasUpdates = true;
+             }
+          }
+        });
+      }
+      
+      // If we found stale sessions, delete them
+      if (hasUpdates) {
+        // Run update asynchronously without blocking the loop
+        userDoc.ref.update(updatePayload).catch(e => console.error("Session cleanup failed:", e));
+      }
+
       if (!userData.pushSubscription) continue; // Skip users without a subscription
 
       // 2. Fetch all revision entries for this user
@@ -71,7 +99,7 @@ module.exports = async (req, res) => {
       }
     }
     
-    res.status(200).json({ success: true, message: 'Cron job executed successfully' });
+    res.status(200).json({ success: true, message: 'Cron job executed (Push + Session Cleanup)' });
   } catch (error) {
     console.error('Error executing cron:', error);
     res.status(500).json({ success: false, error: error.message });
