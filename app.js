@@ -148,6 +148,14 @@ async function doRegister() {
     await _db.collection('requests').doc(cred.user.uid).set({
       name, email, phone, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    // Send Background Notification to Admin
+    fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name })
+    }).catch(e => console.error('Notify error:', e));
+
     showScreen('pendingScreen');
   } catch(e) { showToast(e.message); }
 }
