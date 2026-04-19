@@ -1,7 +1,7 @@
-const CACHE_NAME = 'studytracker-v10.1';
+const CACHE_NAME = 'studytracker-v10.5';
 const STATIC_ASSETS = [
-  '/app.html',
-  '/app.css?v=10.1',
+  '/index.html',
+  '/logo.svg',
   '/app.js',
   '/manifest.json',
   '/icon-192.png',
@@ -83,8 +83,8 @@ self.addEventListener('push', e => {
   e.waitUntil(
     self.registration.showNotification(data.title || 'Study Tracker', {
       body: data.body || 'You have revisions due!',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon: '/logo.svg',
+      badge: '/logo.svg',
       tag: 'revision-reminder',
       renotify: true,
       vibrate: [200, 100, 200]
@@ -94,5 +94,5 @@ self.addEventListener('push', e => {
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.openWindow('/app.html'));
+  e.waitUntil(clients.openWindow('/index.html'));
 });
