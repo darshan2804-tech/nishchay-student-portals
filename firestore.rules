@@ -2,77 +2,58 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: check if admin
+    // isAdmin: email-only check — NO database reads, zero latency
     function isAdmin() {
-      // Priority 1: Check Auth Token Email (Fastest, no DB read)
       return request.auth != null && (
         request.auth.token.email == "darshanderkar20@gmail.com" ||
-        request.auth.token.email == "derkardarshan@gmail.com" ||
-        // Priority 2: Check role field (Optional fallback, use only if above fails)
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'student') == 'admin')
+        request.auth.token.email == "derkardarshan@gmail.com"
       );
     }
 
-    // Users: any auth'd user can read, write own doc or admin can write any
     match /users/{userId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && (
+        isAdmin() ||
         (request.auth.uid == userId && (
-          // Allow update if NOT touching sessions at all
           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['sessions']) ||
-          // OR if touching sessions: new sessions map must have <= 2 entries
           request.resource.data.get('sessions', {}).size() <= 2
-        )) ||
-        // Admin bypass
-        request.auth.token.email == "darshanderkar20@gmail.com" ||
-        request.auth.token.email == "derkardarshan@gmail.com"
+        ))
       );
-      // Only admins can delete user documents
-      allow delete: if request.auth != null && (
-        request.auth.token.email == "darshanderkar20@gmail.com" ||
-        request.auth.token.email == "derkardarshan@gmail.com"
-      );
+      allow delete: if isAdmin();
     }
 
-    // Sub-collections under users (entries, daily, settings, mocks, studytime, data)
+    // Sub-collections: own data or admin
     match /users/{userId}/{subcol}/{docId} {
       allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
-    // Requests collection: user writes own, admin reads all
     match /requests/{userId} {
       allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
-    // Enquiries: anyone logged in can create, admin can read/delete
     match /enquiries/{docId} {
       allow read: if true;
       allow create: if request.auth != null;
       allow update, delete: if isAdmin();
     }
 
-    // Settings (branding etc): public read, admin write
     match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Admin Logs: strict admin-only read/write
     match /adminLogs/{docId} {
       allow read, write: if isAdmin();
     }
 
-    // Access Requests (duplicate for dashboard V2)
     match /accessRequests/{docId} {
-      allow read, write: if isAdmin();
+      allow read, delete, update: if isAdmin();
       allow create: if request.auth != null;
     }
-    
-    // Site Settings
+
     match /site_settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
