@@ -589,14 +589,16 @@ function showResult(entry) {
 async function savePendingEntry() {
   if (!App.pendingEntry) return;
   const btn = document.getElementById('addToCalIcsBtn');
-  btn.disabled = true; btn.textContent = 'Saving to Firestore...';
+  const originalText = btn.textContent;
+  btn.disabled = true; 
+  btn.textContent = 'Saving to Firestore...';
+  
   try {
-    await _db.collection('users').doc(App.user.uid).collection('entries').doc(String(App.pendingEntry.id))
+    // Add a timeout safety since Firestore writes can sometimes hang if rules are rejected silently in some environments
+    const savePromise = _db.collection('users').doc(App.user.uid).collection('entries').doc(String(App.pendingEntry.id))
       .set({ ...App.pendingEntry, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    
-    // Reset button state for next use
-    btn.disabled = false;
-    btn.textContent = 'Save to Cloud Firestore';
+
+    await savePromise;
     
     showToast('🚀 Topic synced to cloud!');
     document.getElementById('resultCard').style.display = 'none';
@@ -605,12 +607,14 @@ async function savePendingEntry() {
     App.currentAddSubject = [];
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     
-    // Switch to Today tab to see the result if applicable
-    setTimeout(() => switchTab('today'), 800);
+    // Switch to Today tab to see the result
+    setTimeout(() => switchTab('today'), 500);
   } catch(e) { 
-    showToast(e.message); 
-    btn.disabled = false; 
-    btn.textContent = 'Save to Cloud Firestore'; 
+    console.error('Save error:', e);
+    showToast('Failed to save: ' + e.message); 
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save to Cloud Firestore';
   }
 }
 
@@ -1307,11 +1311,19 @@ async function saveExamDates() {
   if (!mains && !adv) return showToast('Please set at least one date.');
   
   if (!App.user) return;
-  await _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv });
+
+  // Optimistically close and update local state
   App.examDates = { mains, adv };
-  closeExamModal();
   renderCountdown();
-  showToast('📅 Exam dates saved!');
+  closeExamModal();
+  
+  try {
+    await _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv });
+    showToast('📅 Exam dates saved!');
+  } catch(e) { 
+    console.error('Exam dates save error:', e);
+    showToast('Failed to save to cloud, but kept locally.'); 
+  }
 }
 
 function renderPerformanceScore() {

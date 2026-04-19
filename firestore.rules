@@ -4,10 +4,13 @@ service cloud.firestore {
 
     // Helper: check if admin
     function isAdmin() {
+      // Priority 1: Check Auth Token Email (Fastest, no DB read)
       return request.auth != null && (
         request.auth.token.email == "darshanderkar20@gmail.com" ||
         request.auth.token.email == "derkardarshan@gmail.com" ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+        // Priority 2: Check role field (Optional fallback, use only if above fails)
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'student') == 'admin')
       );
     }
 
@@ -20,11 +23,9 @@ service cloud.firestore {
           // Allow update if NOT touching sessions at all
           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['sessions']) ||
           // OR if touching sessions: new sessions map must have <= 2 entries
-          // (This covers both adding a session and removing one for logout)
-          !('sessions' in request.resource.data) ||
-          request.resource.data.sessions.size() <= 2
+          request.resource.data.get('sessions', {}).size() <= 2
         )) ||
-        // Admin bypass — full write access
+        // Admin bypass
         request.auth.token.email == "darshanderkar20@gmail.com" ||
         request.auth.token.email == "derkardarshan@gmail.com"
       );
