@@ -372,7 +372,7 @@ _auth.onAuthStateChanged(async user => {
     const vLabel = document.createElement('div');
     vLabel.id = 'debug-stamp';
     vLabel.style = 'position:fixed;bottom:10px;right:10px;font-size:10px;color:var(--text-dim);z-index:9999;background:var(--surface2);padding:4px 8px;border-radius:4px;border:1px solid var(--border);';
-    vLabel.innerHTML = `v9.0 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
+    vLabel.innerHTML = `v10.1 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
     document.body.appendChild(vLabel);
 
     window.forceUpdateSystem = async () => {
