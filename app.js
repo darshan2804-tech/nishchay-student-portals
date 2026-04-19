@@ -344,6 +344,12 @@ _auth.onAuthStateChanged(async user => {
       loginCount: firebase.firestore.FieldValue.increment(1)
     }, { merge: true }).catch(() => {});
 
+    // Version Stamp
+    const vLabel = document.createElement('div');
+    vLabel.style = 'position:fixed;bottom:80px;right:10px;font-size:10px;color:rgba(255,255,255,0.2);z-index:9999;pointer-events:none;';
+    vLabel.textContent = 'v9.0 | 2026-04-19';
+    document.body.appendChild(vLabel);
+
     // Init the app
     initApp();
 
