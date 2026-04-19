@@ -399,25 +399,40 @@ _auth.onAuthStateChanged(async user => {
 
     // Real-time listener for admin revocations (status or session kicks)
     const unsubStatus = _db.collection('users').doc(user.uid)
-      .onSnapshot(snap => {
+      .onSnapshot({ includeMetadataChanges: true }, async snap => {
         if (!snap.exists) return;
+        
+        // CRITICAL FIX: Ignore synchronous cache fires for destructive actions!
+        // If a student was previously revoked, the local cache remembers it.
+        // Even if the server says 'approved', the cache fires first and would log them out instantly.
+        if (snap.metadata.fromCache) return; 
+
         const liveData = snap.data();
 
-        // If status was revoked, force logout
+        // 1. If status was changed to revoked by admin
         if (liveData.status !== 'approved' && !isAdmin) {
           alert('⛔ Your access has been revoked by the admin.');
+          _sessionRegistered = false;
+          if (_heartbeatTimer) clearInterval(_heartbeatTimer);
+          
+          // Cleanup session on our way out so admin panel doesn't show ghost session
+          const deviceId = _getDeviceId();
+          const cleanup = {}; cleanup[`sessions.${deviceId}`] = firebase.firestore.FieldValue.delete();
+          await _db.collection('users').doc(user.uid).update(cleanup).catch(()=>{});
+          
           _auth.signOut();
           window.location.reload();
           return;
         }
 
-        // If our session was removed by admin, force logout
+        // 2. If our session was removed by admin
         const deviceId = _getDeviceId();
         const sessions = liveData.sessions || {};
         if (_sessionRegistered && !isAdmin && !sessions[deviceId]) {
           alert('⛔ Your session on this device was revoked by the admin. Logging out...');
           _sessionRegistered = false;
-          if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
+          if (_heartbeatTimer) clearInterval(_heartbeatTimer);
+          // Already deleted by admin, just sign out
           _auth.signOut();
           window.location.reload();
         }
