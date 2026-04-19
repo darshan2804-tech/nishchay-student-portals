@@ -65,9 +65,23 @@ function initBrandingSync() {
     if (doc.exists) {
       const data = doc.data();
       if (data.logo_url) {
-        const logo = document.getElementById('loginLogo');
-        if (logo) logo.src = data.logo_url;
-        // Also update any other logos
+        const loginLogo = document.getElementById('loginLogo');
+        if (loginLogo) loginLogo.src = data.logo_url;
+        
+        const sidebarLogo = document.getElementById('sidebarLogo');
+        if (sidebarLogo) sidebarLogo.src = data.logo_url;
+
+        document.querySelectorAll('.nav-logo-icon, .footer-logo').forEach(el => {
+          if (el.classList.contains('nav-logo-icon')) {
+            el.innerHTML = `<img src="${data.logo_url}" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" />`;
+            el.style.background = 'transparent';
+            el.style.boxShadow = 'none';
+          }
+          if (el.classList.contains('footer-logo')) {
+            el.innerHTML = `<img src="${data.logo_url}" style="height:24px; border-radius:4px;" /> Study Tracker`;
+          }
+        });
+
         document.querySelectorAll('.app-logo').forEach(el => el.src = data.logo_url);
       }
       if (data.primary_color) {

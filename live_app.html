@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -20,7 +20,7 @@
 </head>
 <body>
 
-  <!-- ── AUTH SCREEN ───────────────────────────────────────────── -->
+  <!-- â”€â”€ AUTH SCREEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="screen active" id="authScreen">
     <div class="split-auth">
       <!-- Left: Info Side -->
@@ -32,21 +32,21 @@
           
           <div class="feature-list">
             <div class="feature-item">
-              <div class="f-icon">📅</div>
+              <div class="f-icon">ðŸ“…</div>
               <div class="f-text">
                 <h3>7-Stage Revision</h3>
                 <p>Scientific scheduling for long-term retention.</p>
               </div>
             </div>
             <div class="feature-item">
-              <div class="f-icon">📊</div>
+              <div class="f-icon">ðŸ“Š</div>
               <div class="f-text">
                 <h3>Insights & Analytics</h3>
                 <p>Visualize your subject mastery and trends.</p>
               </div>
             </div>
             <div class="feature-item">
-              <div class="f-icon">☁️</div>
+              <div class="f-icon">â˜ï¸</div>
               <div class="f-text">
                 <h3>Cloud Sync</h3>
                 <p>Access your study log from any device.</p>
@@ -55,7 +55,7 @@
           </div>
         </div>
         <div class="info-footer">
-          © 2026 Study Tracker • Professional Education Tools
+          Â© 2026 Study Tracker â€¢ Professional Education Tools
         </div>
       </div>
 
@@ -75,7 +75,7 @@
             </div>
             <div class="input-group">
               <label>Password</label>
-              <input type="password" id="loginPass" class="input-field" placeholder="••••••••">
+              <input type="password" id="loginPass" class="input-field" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
             </div>
             <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Sign In to Dashboard</button>
             
@@ -104,16 +104,16 @@
     </div>
   </div>
 
-  <!-- ── PENDING SCREEN ────────────────────────────────────────── -->
+  <!-- â”€â”€ PENDING SCREEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="screen" id="pendingScreen" style="display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px; text-align:center;">
-    <div style="font-size: 4rem; margin-bottom: 20px;">⏳</div>
+    <div style="font-size: 4rem; margin-bottom: 20px;">â³</div>
     <h1>Access Pending</h1>
     <p style="color: var(--text-muted); margin: 15px 0 30px; max-width: 320px;">Your account is awaiting manual approval from the admin.</p>
     <button class="btn btn-primary" onclick="checkApproval()" style="max-width:200px;">Check Status</button>
     <button onclick="doLogout()" style="margin-top:20px; background:none; border:none; color:var(--text-dim); font-size:0.8rem; cursor:pointer;">Sign Out</button>
   </div>
 
-  <!-- ── MAIN APP SCREEN ───────────────────────────────────────── -->
+  <!-- â”€â”€ MAIN APP SCREEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="screen" id="appScreen">
     <div class="main-layout">
       
@@ -129,22 +129,22 @@
 
         <nav style="flex: 1;">
           <a href="#" id="nav-dash" class="nav-link active" onclick="switchTab('dash')">
-            <span>📊</span> <span class="nav-text">Dashboard</span>
+            <span>ðŸ“Š</span> <span class="nav-text">Dashboard</span>
           </a>
           <a href="#" id="nav-today" class="nav-link" onclick="switchTab('today')">
-            <span>📋</span> <span class="nav-text">Revision Today</span>
+            <span>ðŸ“‹</span> <span class="nav-text">Revision Today</span>
           </a>
           <a href="#" id="nav-calendar" class="nav-link" onclick="switchTab('calendar')">
-            <span>📅</span> <span class="nav-text">My Calendar</span>
+            <span>ðŸ“…</span> <span class="nav-text">My Calendar</span>
           </a>
           <a href="#" id="nav-add" class="nav-link" onclick="switchTab('add')">
-            <span>✏️</span> <span class="nav-text">Add Topic</span>
+            <span>âœï¸</span> <span class="nav-text">Add Topic</span>
           </a>
           <a href="#" id="nav-log" class="nav-link" onclick="switchTab('log')">
-            <span>📚</span> <span class="nav-text">Study Log</span>
+            <span>ðŸ“š</span> <span class="nav-text">Study Log</span>
           </a>
           <a href="#" id="nav-tools" class="nav-link" onclick="switchTab('tools')">
-            <span>🛠️</span> <span class="nav-text">Student Tools</span>
+            <span>ðŸ› ï¸</span> <span class="nav-text">Student Tools</span>
           </a>
         </nav>
 
@@ -155,7 +155,7 @@
               <div id="menuName" style="font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">Student</div>
               <div id="menuEmail" style="font-size: 0.65rem; color: var(--text-dim);">...</div>
             </div>
-            <button onclick="doLogout()" style="margin-left: auto; background: none; border: none; font-size: 1rem; cursor: pointer;">🚪</button>
+            <button onclick="doLogout()" style="margin-left: auto; background: none; border: none; font-size: 1rem; cursor: pointer;">ðŸšª</button>
           </div>
         </div>
       </aside>
@@ -172,7 +172,7 @@
             </div>
             <div style="text-align: right;">
               <h1 id="clockTime" style="font-size: 1.8rem;">00:00</h1>
-              <button id="themeBtn" onclick="toggleTheme()" style="background: var(--surface2); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; cursor: pointer;">🌙</button>
+              <button id="themeBtn" onclick="toggleTheme()" style="background: var(--surface2); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; cursor: pointer;">ðŸŒ™</button>
             </div>
           </div>
 
@@ -237,7 +237,7 @@
         <div id="page-today" class="page">
           <div class="flex-row" style="justify-content: space-between; margin-bottom: 24px;">
             <h1>Today's Revisions</h1>
-            <button class="btn" onclick="bulkNotifyToday()" style="width: auto; padding: 8px 16px; font-size:0.75rem; background: var(--surface2); border:1px solid var(--border);">🔔 Notify All</button>
+            <button class="btn" onclick="bulkNotifyToday()" style="width: auto; padding: 8px 16px; font-size:0.75rem; background: var(--surface2); border:1px solid var(--border);">ðŸ”” Notify All</button>
           </div>
           <div id="todayContent">
             <!-- Dynamic items -->
@@ -252,9 +252,9 @@
               <p style="color:var(--text-dim);font-size:0.85rem;" id="calMonthLabel">Loading...</p>
             </div>
             <div style="display:flex;gap:10px;">
-              <button onclick="calPrevMonth()" style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">← Prev</button>
+              <button onclick="calPrevMonth()" style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">â† Prev</button>
               <button onclick="calToday()" style="background:var(--primary-pale);border:1px solid var(--primary);color:var(--primary);padding:8px 16px;border-radius:10px;cursor:pointer;font-weight:700;">Today</button>
-              <button onclick="calNextMonth()" style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">Next →</button>
+              <button onclick="calNextMonth()" style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">Next â†’</button>
             </div>
           </div>
           <!-- Day headers -->
@@ -273,7 +273,7 @@
           <div id="calDayPanel" style="display:none;margin-top:24px;" class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
               <h3 id="calDayTitle">Events</h3>
-              <button onclick="document.getElementById('calDayPanel').style.display='none'" style="background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer;">✕</button>
+              <button onclick="document.getElementById('calDayPanel').style.display='none'" style="background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer;">âœ•</button>
             </div>
             <div id="calDayEvents"></div>
           </div>
@@ -317,7 +317,7 @@
             <h1>Study Log</h1>
             <div style="position: relative; flex: 1; max-width: 300px;">
               <input type="text" id="searchInput" class="input-field" placeholder="Search topics..." oninput="filterLog()" style="padding-right: 40px;">
-              <span onclick="clearSearch()" id="searchClear" style="position: absolute; right: 12px; top: 12px; color: var(--text-dim); cursor: pointer; display: none;">✕</span>
+              <span onclick="clearSearch()" id="searchClear" style="position: absolute; right: 12px; top: 12px; color: var(--text-dim); cursor: pointer; display: none;">âœ•</span>
             </div>
           </div>
           <div id="statsRow" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 24px;"></div>
@@ -334,7 +334,7 @@
             
             <!-- Pomodoro -->
             <div class="card card-glass">
-              <h3>🍅 Focus Timer</h3>
+              <h3>ðŸ… Focus Timer</h3>
               <div style="text-align: center; margin: 24px 0;">
                 <h1 id="pomoTime" style="font-size: 3.5rem; font-variant-numeric: tabular-nums;">25:00</h1>
                 <p id="pomoLabel" style="color: var(--text-dim); margin-top: 5px;">Focus Session</p>
@@ -344,12 +344,12 @@
                 <button class="btn" id="pomo-50" onclick="setPomoMode(50, 'Deep Work')" style="flex: 1; background: var(--surface2);">50m</button>
                 <button class="btn" id="pomo-5" onclick="setPomoMode(5, 'Short Break')" style="flex: 1; background: var(--surface2);">5m</button>
               </div>
-              <button class="btn btn-primary" id="pomoStartBtn" onclick="startPomo()">▶ Start Session</button>
+              <button class="btn btn-primary" id="pomoStartBtn" onclick="startPomo()">â–¶ Start Session</button>
             </div>
 
             <!-- Questions Attempted -->
             <div class="card">
-              <h3>✏️ Questions Attempted</h3>
+              <h3>âœï¸ Questions Attempted</h3>
               <p style="color:var(--text-dim);font-size:0.8rem;margin:8px 0 16px;">Log questions solved today</p>
               <div class="input-group">
                 <label>Subject</label>
@@ -361,12 +361,12 @@
                 <label>Questions Count</label>
                 <input type="number" id="qAttemptedInput" class="input-field" placeholder="e.g. 40" min="1">
               </div>
-              <button class="btn btn-primary" onclick="logQuestionsAttempted()">✅ Log Questions</button>
+              <button class="btn btn-primary" onclick="logQuestionsAttempted()">âœ… Log Questions</button>
             </div>
 
             <!-- Study Time Tracker -->
             <div class="card">
-              <h3>⏱️ Study Time Tracker</h3>
+              <h3>â±ï¸ Study Time Tracker</h3>
               <p style="color:var(--text-dim);font-size:0.8rem;margin:8px 0 16px;">Track hours studied per subject</p>
               <div class="input-group">
                 <label>Subject</label>
@@ -378,14 +378,14 @@
                 <label>Hours Studied</label>
                 <input type="number" id="studyHoursInput" class="input-field" placeholder="e.g. 2.5" min="0.5" step="0.5">
               </div>
-              <button class="btn btn-primary" onclick="logStudyTime()">✅ Log Study Time</button>
+              <button class="btn btn-primary" onclick="logStudyTime()">âœ… Log Study Time</button>
               <div id="studyTimeList" style="margin-top: 16px; max-height: 180px; overflow-y: auto;"></div>
             </div>
 
             <!-- Mock Test Tracker -->
             <div class="card">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-                <h3>📊 Mock Test Tracker</h3>
+                <h3>ðŸ“Š Mock Test Tracker</h3>
                 <button class="btn" onclick="document.getElementById('mockModal').classList.add('active')" style="width:auto;padding:6px 12px;font-size:0.7rem;">+ Add</button>
               </div>
               <div id="mockList" style="max-height: 250px; overflow-y: auto;"></div>
@@ -394,7 +394,7 @@
             <!-- Mistakes -->
             <div class="card">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>📕 Mistake Log</h3>
+                <h3>ðŸ“• Mistake Log</h3>
                 <button class="btn" onclick="openMistakeForm()" style="width: auto; padding: 6px 12px; font-size: 0.7rem;">+ Add</button>
               </div>
               <div id="mistakeList" style="max-height: 300px; overflow-y: auto;"></div>
@@ -403,7 +403,7 @@
             <!-- Flashcards -->
             <div class="card card-glass">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <h3>🗂️ Flashcards</h3>
+                <h3>ðŸ—‚ï¸ Flashcards</h3>
                 <div style="display:flex;gap:6px;">
                   <button onclick="showFlashcard('Physics')" style="background:var(--surface2);border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Phy</button>
                   <button onclick="showFlashcard('Chemistry')" style="background:var(--surface2);border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:0.7rem;cursor:pointer;">Chem</button>
@@ -414,16 +414,16 @@
                 <div style="font-size:0.7rem;color:var(--text-dim);">Loading...</div>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
-                <button onclick="prevFlashcard()" style="background:var(--surface2);border:none;color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">← Prev</button>
+                <button onclick="prevFlashcard()" style="background:var(--surface2);border:none;color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">â† Prev</button>
                 <span id="flashcardCounter" style="font-size:0.8rem;color:var(--text-dim);">1 / 5</span>
-                <button onclick="nextFlashcard()" style="background:var(--surface2);border:none;color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">Next →</button>
+                <button onclick="nextFlashcard()" style="background:var(--surface2);border:none;color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;">Next â†’</button>
               </div>
             </div>
             
             <!-- Formula Sheet -->
             <div class="card" style="grid-column: 1 / -1;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>📐 Quick Formulas</h3>
+                <h3>ðŸ“ Quick Formulas</h3>
                 <div style="display: flex; gap: 10px;">
                   <button class="btn" id="ff-phy" onclick="showFormulas('Physics')" style="width: auto; padding: 6px 14px; background: var(--primary);">Physics</button>
                   <button class="btn" id="ff-che" onclick="showFormulas('Chemistry')" style="width: auto; padding: 6px 14px; background: var(--surface2);">Chemistry</button>
@@ -441,19 +441,19 @@
 
     <!-- Mobile Bottom Nav -->
     <nav class="bottom-nav">
-      <a href="#" id="nav-dash-mob" onclick="switchTab('dash')">📊</a>
-      <a href="#" id="nav-today-mob" onclick="switchTab('today')">📋</a>
-      <a href="#" id="nav-calendar-mob" onclick="switchTab('calendar')">📅</a>
-      <a href="#" id="nav-add-mob" onclick="switchTab('add')">✏️</a>
-      <a href="#" id="nav-log-mob" onclick="switchTab('log')">📚</a>
-      <a href="#" id="nav-tools-mob" onclick="switchTab('tools')">🛠️</a>
+      <a href="#" id="nav-dash-mob" onclick="switchTab('dash')">ðŸ“Š</a>
+      <a href="#" id="nav-today-mob" onclick="switchTab('today')">ðŸ“‹</a>
+      <a href="#" id="nav-calendar-mob" onclick="switchTab('calendar')">ðŸ“…</a>
+      <a href="#" id="nav-add-mob" onclick="switchTab('add')">âœï¸</a>
+      <a href="#" id="nav-log-mob" onclick="switchTab('log')">ðŸ“š</a>
+      <a href="#" id="nav-tools-mob" onclick="switchTab('tools')">ðŸ› ï¸</a>
     </nav>
   </div>
 
-  <!-- ── MODALS ────────────────────────────────────────────────── -->
+  <!-- â”€â”€ MODALS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <div class="modal-overlay" id="mistakeModal">
     <div class="modal-box">
-      <h3>📕 Log a Mistake</h3>
+      <h3>ðŸ“• Log a Mistake</h3>
       <div class="input-group"><label>Subject</label><select id="mSubject" class="input-field"><option>Physics</option><option>Chemistry</option><option>Maths</option></select></div>
       <div class="input-group"><label>Type</label><select id="mType" class="input-field"><option>Silly mistake</option><option>Concept gap</option><option>Calculation error</option></select></div>
       <div class="input-group"><label>Topic / Question</label><input type="text" id="mTopic" class="input-field"></div>
@@ -467,7 +467,7 @@
 
   <div class="modal-overlay" id="examModal">
     <div class="modal-box">
-      <h3>📅 Set Exam Dates</h3>
+      <h3>ðŸ“… Set Exam Dates</h3>
       <div class="input-group"><label>JEE Mains</label><input type="date" id="mainDate" class="input-field"></div>
       <div class="input-group"><label>JEE Advanced</label><input type="date" id="advDate" class="input-field"></div>
       <div style="display: flex; gap: 10px;">
@@ -479,7 +479,7 @@
 
   <div class="modal-overlay" id="mockModal">
     <div class="modal-box">
-      <h3>📊 Log Mock Test</h3>
+      <h3>ðŸ“Š Log Mock Test</h3>
       <div class="input-group"><label>Test Name</label><input type="text" id="mockName" class="input-field" placeholder="e.g. Allen Mock 5"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
         <div class="input-group"><label>Your Score</label><input type="number" id="mockScore" class="input-field" placeholder="e.g. 210"></div>
@@ -492,6 +492,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js" charset="utf-8"></script>
 </body>
 </html>
