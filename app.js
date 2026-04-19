@@ -315,11 +315,11 @@ async function _registerSession(user) {
     // Step 5: Fetch Geolocation & Register this device
     let locationStr = 'Unknown Location';
     try {
-      // Use ipapi to get location context without exposing raw IP unless needed
-      const resp = await fetch('https://ipapi.co/json/');
+      // Use ipinfo to get location context (less likely to be blocked by adblockers)
+      const resp = await fetch('https://ipinfo.io/json');
       if (resp.ok) {
         const ipd = await resp.json();
-        if (ipd.city) locationStr = `${ipd.city}, ${ipd.country_name || ipd.country}`;
+        if (ipd.city) locationStr = `${ipd.city}, ${ipd.country || ''}`.replace(/,\s*$/, '');
       }
     } catch(e) { console.warn('Geolocation blocked or failed.'); }
 
