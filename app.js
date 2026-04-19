@@ -61,34 +61,43 @@ function showScreen(id) {
 
 // ── Branding Sync ──
 function initBrandingSync() {
-  _db.collection('site_settings').doc('branding').onSnapshot(doc => {
+  console.log('🔄 Initializing Branding Sync...');
+  _db.collection('settings').doc('branding').onSnapshot(doc => {
     if (doc.exists) {
       const data = doc.data();
-      if (data.logo_url) {
-        const loginLogo = document.getElementById('loginLogo');
-        if (loginLogo) loginLogo.src = data.logo_url;
-        
-        const sidebarLogo = document.getElementById('sidebarLogo');
-        if (sidebarLogo) sidebarLogo.src = data.logo_url;
+      const logoUrl = data.logo_url;
+      console.log('📦 Branding Data Received:', logoUrl ? `URL found (len: ${logoUrl.length})` : 'No URL');
+      
+      if (logoUrl) {
+        // IDs
+        ['loginLogo', 'sidebarLogo', 'pendingLogo'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.src = logoUrl;
+        });
 
+        // Classes
+        document.querySelectorAll('.app-logo, .nav-logo-img').forEach(el => el.src = logoUrl);
+        
         document.querySelectorAll('.nav-logo-icon, .footer-logo').forEach(el => {
           if (el.classList.contains('nav-logo-icon')) {
-            el.innerHTML = `<img src="${data.logo_url}" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" />`;
+            el.innerHTML = `<img src="${logoUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;" />`;
             el.style.background = 'transparent';
             el.style.boxShadow = 'none';
           }
           if (el.classList.contains('footer-logo')) {
-            el.innerHTML = `<img src="${data.logo_url}" style="height:24px; border-radius:4px;" /> Study Tracker`;
+            el.innerHTML = `<img src="${logoUrl}" style="height:24px; border-radius:4px;" /> Study Tracker`;
           }
         });
-
-        document.querySelectorAll('.app-logo').forEach(el => el.src = data.logo_url);
       }
       if (data.primary_color) {
         document.documentElement.style.setProperty('--accent', data.primary_color);
         document.documentElement.style.setProperty('--accent-glow', data.primary_color + '40');
       }
+    } else {
+      console.warn('⚠️ Branding document not found in settings/branding');
     }
+  }, err => {
+    console.error('❌ Branding Sync Error:', err);
   });
 }
 
@@ -372,7 +381,7 @@ _auth.onAuthStateChanged(async user => {
     const vLabel = document.createElement('div');
     vLabel.id = 'debug-stamp';
     vLabel.style = 'position:fixed;bottom:10px;right:10px;font-size:10px;color:var(--text-dim);z-index:9999;background:var(--surface2);padding:4px 8px;border-radius:4px;border:1px solid var(--border);';
-    vLabel.innerHTML = `v10.1 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
+    vLabel.innerHTML = `v10.2 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
     document.body.appendChild(vLabel);
 
     window.forceUpdateSystem = async () => {
