@@ -39,6 +39,14 @@ const showToast = msg => {
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 };
 
+// ── Firestore Timeout Wrapper ──
+// Ensures a Firestore promise doesn't hang indefinitely.
+// If Firestore doesn't respond within `ms` milliseconds, resolves with null instead of hanging.
+const withTimeout = (promise, ms = 10000) => {
+  const timer = new Promise(resolve => setTimeout(() => resolve('__TIMEOUT__'), ms));
+  return Promise.race([promise, timer]);
+};
+
 // ── Firebase Init ──
 firebase.initializeApp(FIREBASE_CONFIG);
 const _auth = firebase.auth();
@@ -609,28 +617,30 @@ function showResult(entry) {
 async function savePendingEntry() {
   if (!App.pendingEntry) return;
   const btn = document.getElementById('addToCalIcsBtn');
-  btn.disabled = true; 
-  btn.textContent = 'Saving to Firestore...';
-  
-  console.log('[DEBUG] Starting savePendingEntry for topic:', App.pendingEntry.topic);
-  try {
-    const savePromise = _db.collection('users').doc(App.user.uid).collection('entries').doc(String(App.pendingEntry.id))
-      .set({ ...App.pendingEntry, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
 
-    await savePromise;
-    console.log('[DEBUG] Firestore write succeeded');
-    
-    showToast('🚀 Topic synced to cloud!');
-    document.getElementById('resultCard').style.display = 'none';
-    document.getElementById('topicInput').value = '';
-    App.pendingEntry = null;
-    App.currentAddSubject = [];
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    
-    setTimeout(() => switchTab('today'), 500);
-  } catch(e) { 
-    console.error('[DEBUG] Save error:', e);
-    showToast('Failed to save: ' + e.message); 
+  try {
+    const result = await withTimeout(
+      _db.collection('users').doc(App.user.uid).collection('entries').doc(String(App.pendingEntry.id))
+        .set({ ...App.pendingEntry, createdAt: firebase.firestore.FieldValue.serverTimestamp() }),
+      10000
+    );
+
+    if (result === '__TIMEOUT__') {
+      showToast('⚠️ Network timeout — check your Firestore rules, then try again.');
+    } else {
+      showToast('🚀 Topic saved!');
+      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('topicInput').value = '';
+      App.pendingEntry = null;
+      App.currentAddSubject = [];
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      setTimeout(() => switchTab('today'), 500);
+    }
+  } catch(e) {
+    console.error('Save error:', e);
+    showToast('Save failed: ' + (e.message || 'Permission denied'));
   } finally {
     btn.disabled = false;
     btn.textContent = 'Save to Cloud Firestore';
@@ -791,8 +801,11 @@ async function rateRevision(btn, key, rating) {
 
   try {
     const ref = _db.collection('users').doc(App.user.uid).collection('daily').doc(ts);
-    await ref.set({ done: { [key]: true }, ratings: { [key]: rating } }, { merge: true });
-    showToast(`Marked as ${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}!`);
+    const result = await withTimeout(
+      ref.set({ done: { [key]: true }, ratings: { [key]: rating } }, { merge: true }),
+      10000
+    );
+    if (result !== '__TIMEOUT__') showToast(`Marked as ${rating === 'easy' ? '🍃 Easy' : '🔥 Hard'}!`);
   } catch (e) {
     showToast('Failed to save. Try again.');
   }
@@ -902,8 +915,11 @@ async function logQuestionsAttempted() {
   const subj = document.getElementById('qSubjectSelect')?.value;
   if (!count || count < 1) return showToast('Enter a valid count');
   const ts = todayStr();
-  await _db.collection('users').doc(App.user.uid).collection('daily').doc(ts)
-    .set({ questionsAttempted: firebase.firestore.FieldValue.increment(count), lastSubject: subj }, { merge: true });
+  await withTimeout(
+    _db.collection('users').doc(App.user.uid).collection('daily').doc(ts)
+      .set({ questionsAttempted: firebase.firestore.FieldValue.increment(count), lastSubject: subj }, { merge: true }),
+    10000
+  );
   document.getElementById('qAttemptedInput').value = '';
   showToast(`✅ Logged ${count} questions for ${subj}`);
 }
@@ -914,9 +930,12 @@ async function logStudyTime() {
   const subj = document.getElementById('studySubjectSelect')?.value;
   if (!hours || hours <= 0) return showToast('Enter valid hours');
   const ts = todayStr();
-  await _db.collection('users').doc(App.user.uid).collection('studytime').doc(ts).set({
-    date: ts, subject: subj, hours: firebase.firestore.FieldValue.increment(hours)
-  }, { merge: true });
+  await withTimeout(
+    _db.collection('users').doc(App.user.uid).collection('studytime').doc(ts).set({
+      date: ts, subject: subj, hours: firebase.firestore.FieldValue.increment(hours)
+    }, { merge: true }),
+    10000
+  );
   document.getElementById('studyHoursInput').value = '';
   showToast(`✅ Logged ${hours}h of ${subj}`);
 }
@@ -939,10 +958,13 @@ async function saveMockTest() {
   const maxScore = parseFloat(document.getElementById('mockMaxScore')?.value) || 300;
   const testName = document.getElementById('mockName')?.value?.trim();
   if (!score || !testName) return showToast('Fill all mock test fields');
-  await _db.collection('users').doc(App.user.uid).collection('mocks').add({
-    date: todayStr(), score, maxScore, testName,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+  await withTimeout(
+    _db.collection('users').doc(App.user.uid).collection('mocks').add({
+      date: todayStr(), score, maxScore, testName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }),
+    10000
+  );
   document.getElementById('mockScore').value = '';
   document.getElementById('mockName').value = '';
   document.getElementById('mockModal').classList.remove('active');
@@ -1328,22 +1350,25 @@ async function saveExamDates() {
   const mains = document.getElementById('mainDate').value;
   const adv = document.getElementById('advDate').value;
   if (!mains && !adv) return showToast('Please set at least one date.');
-  
   if (!App.user) return;
-  console.log('[DEBUG] Saving exam dates:', { mains, adv });
 
-  // Optimistically close and update local state
+  // Optimistically update UI immediately
   App.examDates = { mains, adv };
   renderCountdown();
   closeExamModal();
-  
+  showToast('📅 Exam dates saved!');
+
+  // Background sync — will not block UI even if it times out
   try {
-    await _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv });
-    console.log('[DEBUG] Exam dates write succeeded');
-    showToast('📅 Exam dates saved!');
-  } catch(e) { 
-    console.error('[DEBUG] Exam dates save error:', e);
-    showToast('Failed to save to cloud, but kept locally.'); 
+    const result = await withTimeout(
+      _db.collection('users').doc(App.user.uid).collection('settings').doc('examdates').set({ mains, adv }),
+      10000
+    );
+    if (result === '__TIMEOUT__') {
+      console.warn('Exam dates save timed out - will retry on next login.');
+    }
+  } catch(e) {
+    console.error('Exam dates cloud sync failed:', e);
   }
 }
 
