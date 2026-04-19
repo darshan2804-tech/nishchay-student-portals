@@ -1,7 +1,4 @@
-// Study Tracker - Enhanced Service Worker v5.0
-// Strategy: Cache-first for assets, Network-first for Firebase
-
-const CACHE_NAME = 'studytracker-v5';
+const CACHE_NAME = 'studytracker-v6';
 const STATIC_ASSETS = [
   '/app.html',
   '/app.css',
