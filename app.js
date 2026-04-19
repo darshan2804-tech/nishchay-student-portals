@@ -344,11 +344,23 @@ _auth.onAuthStateChanged(async user => {
       loginCount: firebase.firestore.FieldValue.increment(1)
     }, { merge: true }).catch(() => {});
 
-    // Version Stamp
+    // Version Stamp + Force Refresh Link
     const vLabel = document.createElement('div');
-    vLabel.style = 'position:fixed;bottom:80px;right:10px;font-size:10px;color:rgba(255,255,255,0.2);z-index:9999;pointer-events:none;';
-    vLabel.textContent = 'v9.0 | 2026-04-19';
+    vLabel.id = 'debug-stamp';
+    vLabel.style = 'position:fixed;bottom:10px;right:10px;font-size:10px;color:var(--text-dim);z-index:9999;background:var(--surface2);padding:4px 8px;border-radius:4px;border:1px solid var(--border);';
+    vLabel.innerHTML = `v9.0 | <span onclick="window.location.reload(true)" style="text-decoration:underline;cursor:pointer;">Refresh</span> | <span onclick="window.forceUpdateSystem()" style="color:var(--primary);cursor:pointer;font-weight:700;">Update Now</span>`;
     document.body.appendChild(vLabel);
+
+    window.forceUpdateSystem = async () => {
+      console.log('[DEBUG] Force update requested...');
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (let reg of regs) await reg.unregister();
+      }
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.reload(true);
+    };
 
     // Init the app
     initApp();
